@@ -1,4 +1,4 @@
-<mxfile host="app.diagrams.net" modified="2022-11-10T10:44:44.294Z" agent="5.0 (X11)" etag="MzLwQs5GDKNtadPy06Gk" version="20.5.3" type="github">
+<mxfile host="app.diagrams.net" modified="2022-11-10T10:48:21.244Z" agent="5.0 (X11)" etag="og_H8eZAEe9DCM0MvYlD" version="20.5.3" type="github">
   <diagram id="bVXuVBvyYeP3UB7t1bTR" name="Page-1">
     <mxGraphModel dx="984" dy="568" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
@@ -400,8 +400,8 @@
             <mxPoint x="90" y="920" as="targetPoint" />
             <Array as="points">
               <mxPoint x="800" y="995" />
-              <mxPoint x="800" y="1060" />
-              <mxPoint x="100" y="1060" />
+              <mxPoint x="800" y="1080" />
+              <mxPoint x="100" y="1080" />
               <mxPoint x="100" y="955" />
             </Array>
           </mxGeometry>
@@ -456,6 +456,25 @@
         </mxCell>
         <mxCell id="CeexQBsngMKWRdjRGY8y-102" value="Either I2C or analogue encoder interface" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
           <mxGeometry x="434" y="1020" width="91" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="CeexQBsngMKWRdjRGY8y-103" value="Control ARM with override switch" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#6a00ff;fontColor=#ffffff;strokeColor=#3700CC;" vertex="1" parent="1">
+          <mxGeometry x="125" y="600" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="CeexQBsngMKWRdjRGY8y-104" value="" style="endArrow=classic;startArrow=classic;html=1;rounded=0;strokeWidth=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;exitX=0;exitY=0.25;exitDx=0;exitDy=0;" edge="1" parent="1" source="CeexQBsngMKWRdjRGY8y-92" target="CeexQBsngMKWRdjRGY8y-103">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="90" y="920" as="sourcePoint" />
+            <mxPoint x="120" y="630" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="100" y="940" />
+              <mxPoint x="100" y="630" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="CeexQBsngMKWRdjRGY8y-105" value="Unknown interface" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="30" y="600" width="60" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="CeexQBsngMKWRdjRGY8y-106" value="RC module" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="125" y="985" width="120" height="60" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
