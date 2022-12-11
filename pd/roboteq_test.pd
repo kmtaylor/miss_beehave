@@ -1,0 +1,33 @@
+#N canvas 416 112 703 481 10;
+#X msg 65 224 open /dev/ttyUSB0;
+#X msg 18 224 0;
+#X floatatom 227 157 5 0 0 0 - - -, f 5;
+#X obj 65 256 modbus 1 0 122;
+#X obj 18 196 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144 -1
+-1;
+#X msg 31 139 stop;
+#X obj 18 164 metro 200;
+#X obj 18 85 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144 -1
+-1;
+#X obj 66 22 loadbang;
+#X obj 34 57 delay 200;
+#X obj 31 114 delay 2000;
+#X obj 227 132 roboteq_temp;
+#X msg 227 55 read cpu;
+#X msg 243 81 read heatsink_1;
+#X msg 256 105 read heatsink_2;
+#X connect 0 0 3 0;
+#X connect 1 0 3 0;
+#X connect 4 0 1 0;
+#X connect 5 0 6 0;
+#X connect 6 0 4 0;
+#X connect 7 0 6 0;
+#X connect 7 0 10 0;
+#X connect 8 0 0 0;
+#X connect 8 0 9 0;
+#X connect 9 0 7 0;
+#X connect 10 0 5 0;
+#X connect 11 0 2 0;
+#X connect 12 0 11 0;
+#X connect 13 0 11 0;
+#X connect 14 0 11 0;
