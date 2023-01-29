@@ -1,0 +1,4 @@
+[submodule "arduino/modbusino"]
+	path = arduino/modbusino
+	url = git@github.com:kmtaylor/modbusino.git
+	ignore = untracked
