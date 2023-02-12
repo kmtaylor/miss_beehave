@@ -1,0 +1,18 @@
+#N canvas 314 188 450 300 10;
+#X obj 17 200 roboteq_modbus 1;
+#X obj 17 47 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144 -1
+-1;
+#X msg 43 47 stop, f 5;
+#X floatatom 17 165 5 0 0 0 - - -, f 5;
+#X obj 17 124 float;
+#X obj 107 46 inlet;
+#X obj 246 49 inlet;
+#X floatatom 246 107 5 0 0 0 - - -, f 5;
+#X obj 17 76 metro 200;
+#X connect 1 0 8 0;
+#X connect 2 0 8 0;
+#X connect 3 0 0 0;
+#X connect 4 0 3 0;
+#X connect 5 0 4 1;
+#X connect 6 0 7 0;
+#X connect 8 0 4 0;

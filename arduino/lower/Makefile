@@ -26,7 +26,7 @@ ARDUINO_OBJS := ../arduino_lib/wiring.o \
                 ../arduino_lib/main.o \
                 ../modbusino/Modbusino.o
 
-OBJS = lower.o
+OBJS = lower.o irq_task.o
 
 FORMAT = ihex
 
