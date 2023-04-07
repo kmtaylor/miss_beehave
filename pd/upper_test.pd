@@ -1,8 +1,12 @@
-#N canvas 18 182 450 300 12;
-#X obj 136 119 modbus 4 0;
-#X msg 136 53 open /dev/ttyACM0;
-#X msg 154 83 0;
-#X msg 189 84 1;
+#N canvas 701 176 432 300 12;
+#X obj 24 116 modbus 4 0;
+#X msg 24 50 open /dev/ttyACM0;
+#X msg 42 80 0;
+#X msg 77 81 1;
+#X obj 118 81 netreceive -u -b 3000;
+#X obj 24 15 loadbang;
 #X connect 1 0 0 0;
 #X connect 2 0 0 0;
 #X connect 3 0 0 0;
+#X connect 4 0 0 0;
+#X connect 5 0 1 0;

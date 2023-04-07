@@ -15,6 +15,7 @@ static ModbusinoSlave modbusino_slave(MODBUS_SLAVE);
 
 void setup() {
     modbusino_slave.setup(MODBUS_BAUD);
+    pinMode(LED_BUILTIN, OUTPUT);
 }
 
 #define MB_ACTION(offset) if (((mb_val = mb_regs[offset]) != MODBUS_IDLE) \
