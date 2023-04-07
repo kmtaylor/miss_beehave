@@ -12,6 +12,7 @@ CPPFLAGS += -DARDUINO=200
 CPPFLAGS += $(if $(GCC_VER_GE12), --param=min-pagesize=0)
 
 ARDUINO_INCLUDE := -I ../arduino_lib -I ../modbusino
+ARDUINO_INCLUDE += -I ../Wire -I ../Wire/utility
 INCLUDE := $(ARDUINO_INCLUDE)
 
 LDFLAGS := -B /usr/avr/lib/avr5 -Wl,--gc-sections
@@ -24,7 +25,9 @@ ARDUINO_OBJS := ../arduino_lib/wiring.o \
                 ../arduino_lib/HardwareSerial1.o \
                 ../arduino_lib/Print.o \
                 ../arduino_lib/main.o \
-                ../modbusino/Modbusino.o
+                ../modbusino/Modbusino.o \
+		../Wire/utility/twi.o \
+		../Wire/Wire.o
 
 OBJS = lower.o irq_task.o
 
