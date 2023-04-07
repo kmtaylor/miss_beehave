@@ -1,0 +1,8 @@
+#N canvas 18 182 450 300 12;
+#X obj 136 119 modbus 4 0;
+#X msg 136 53 open /dev/ttyACM0;
+#X msg 154 83 0;
+#X msg 189 84 1;
+#X connect 1 0 0 0;
+#X connect 2 0 0 0;
+#X connect 3 0 0 0;

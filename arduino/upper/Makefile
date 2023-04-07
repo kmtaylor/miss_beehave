@@ -12,7 +12,6 @@ CPPFLAGS += -DARDUINO=200
 CPPFLAGS += $(if $(GCC_VER_GE12), --param=min-pagesize=0)
 
 ARDUINO_INCLUDE := -I ../arduino_lib -I ../modbusino -I ../common
-ARDUINO_INCLUDE += -I ../Wire -I ../Wire/utility
 INCLUDE := $(ARDUINO_INCLUDE)
 
 LDFLAGS := -B /usr/avr/lib/avr5 -Wl,--gc-sections
@@ -22,18 +21,15 @@ ARDUINO_OBJS := ../arduino_lib/wiring.o \
                 ../arduino_lib/hooks.o \
                 ../arduino_lib/HardwareSerial.o \
                 ../arduino_lib/HardwareSerial0.o \
-                ../arduino_lib/HardwareSerial1.o \
                 ../arduino_lib/Print.o \
                 ../arduino_lib/main.o \
                 ../modbusino/Modbusino.o \
-		../Wire/utility/twi.o \
-		../Wire/Wire.o
 
-OBJS = lower.o ../common/irq_task.o
+OBJS = upper.o
 
 FORMAT = ihex
 
-TARGET = lower
+TARGET = upper
 
 all: $(TARGET).hex $(TARGET).eep $(TARGET).lss
 
@@ -58,14 +54,12 @@ $(TARGET).elf: $(OBJS) $(ARDUINO_OBJS)
 
 program: $(TARGET).hex
 	avrdude -p m$(CPU_TYPE) -c wiring -D -U flash:w:$(TARGET).hex \
-		-P /dev/ttyUSB0
+		-P /dev/ttyACM0
 clean:
 	rm -f *.o
 	rm -f ../common/*.o
 	rm -f ../arduino_lib/*.o
 	rm -f ../modbusino/*.o
-	rm -f ../Wire/utility/*.o
-	rm -f ../Wire/*.o
 
 cleanall: clean
 	rm -f $(TARGET).hex
