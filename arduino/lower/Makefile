@@ -29,7 +29,7 @@ ARDUINO_OBJS := ../arduino_lib/wiring.o \
 		../Wire/utility/twi.o \
 		../Wire/Wire.o
 
-OBJS = lower.o ../common/irq_task.o
+OBJS = lower.o ../common/irq_task.o rugged_shield.o
 
 FORMAT = ihex
 
