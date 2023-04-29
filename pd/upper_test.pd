@@ -1,12 +1,39 @@
-#N canvas 701 176 432 300 12;
+#N canvas 701 176 432 552 12;
 #X obj 24 116 modbus 4 0;
 #X msg 24 50 open /dev/ttyACM0;
 #X msg 42 80 0;
 #X msg 77 81 1;
 #X obj 118 81 netreceive -u -b 3000;
 #X obj 24 15 loadbang;
+#X obj 37 161 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144 -1
+-1;
+#X floatatom 33 243 5 0 0 0 - - -, f 5;
+#X floatatom 210 243 5 0 0 0 - - -, f 5;
+#X floatatom 121 245 5 0 0 0 - - -, f 5;
+#X obj 121 208 modbus 4 2;
+#X obj 210 209 modbus 4 3;
+#X obj 33 208 modbus 4 1;
+#X obj 139 170 metro 100;
+#X obj 138 141 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144
+-1 -1;
+#X obj 96 292 vsl 15 128 1000 2000 0 0 empty empty empty 0 -9 0 10
+-262144 -1 -1 0 1;
+#X obj 34 291 vsl 15 128 1000 2000 0 0 empty empty empty 0 -9 0 10
+-262144 -1 -1 0 1;
 #X connect 1 0 0 0;
 #X connect 2 0 0 0;
 #X connect 3 0 0 0;
 #X connect 4 0 0 0;
 #X connect 5 0 1 0;
+#X connect 6 0 10 0;
+#X connect 6 0 11 0;
+#X connect 6 0 12 0;
+#X connect 8 0 15 0;
+#X connect 9 0 16 0;
+#X connect 10 0 9 0;
+#X connect 11 0 8 0;
+#X connect 12 0 7 0;
+#X connect 13 0 12 0;
+#X connect 13 0 10 0;
+#X connect 13 0 11 0;
+#X connect 14 0 13 0;

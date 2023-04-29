@@ -12,6 +12,7 @@ CPPFLAGS += -DARDUINO=200
 CPPFLAGS += $(if $(GCC_VER_GE12), --param=min-pagesize=0)
 
 ARDUINO_INCLUDE := -I ../arduino_lib -I ../modbusino -I ../common
+ARDUINO_INCLUDE += -I ../iBus/src
 INCLUDE := $(ARDUINO_INCLUDE)
 
 LDFLAGS := -B /usr/avr/lib/avr5 -Wl,--gc-sections
@@ -21,9 +22,11 @@ ARDUINO_OBJS := ../arduino_lib/wiring.o \
                 ../arduino_lib/hooks.o \
                 ../arduino_lib/HardwareSerial.o \
                 ../arduino_lib/HardwareSerial0.o \
+                ../arduino_lib/HardwareSerial2.o \
                 ../arduino_lib/Print.o \
                 ../arduino_lib/main.o \
                 ../modbusino/Modbusino.o \
+		../iBus/src/iBus.o
 
 OBJS = upper.o
 
@@ -60,6 +63,7 @@ clean:
 	rm -f ../common/*.o
 	rm -f ../arduino_lib/*.o
 	rm -f ../modbusino/*.o
+	rm -f ../iBus/src/*.o
 
 cleanall: clean
 	rm -f $(TARGET).hex
