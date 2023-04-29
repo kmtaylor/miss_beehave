@@ -5,3 +5,4 @@
 [submodule "arduino/iBus"]
 	path = arduino/iBus
 	url = https://github.com/VICLER/iBus.git
+	ignore = untracked
