@@ -1,8 +1,8 @@
 [submodule "arduino/modbusino"]
-	path = arduino/modbusino
+	path = arduino/lib/modbusino
 	url = git@github.com:kmtaylor/modbusino.git
 	ignore = untracked
 [submodule "arduino/iBus"]
-	path = arduino/iBus
+	path = arduino/lib/iBus
 	url = https://github.com/VICLER/iBus.git
 	ignore = untracked
