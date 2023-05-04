@@ -14,8 +14,8 @@ CPPFLAGS += $(if $(GCC_VER_GE12), --param=min-pagesize=0)
 
 ARDUINO_INCLUDE := -I ../lib/ArduinoCore-avr/cores/arduino
 ARDUINO_INCLUDE += -I ../lib/ArduinoCore-avr/variants/mega
+ARDUINO_INCLUDE += -I ../lib/ArduinoCore-avr/libraries/Wire/src
 ARDUINO_INCLUDE += -I ../common
-ARDUINO_INCLUDE += -I ../lib/Wire -I ../lib/Wire/utility
 ARDUINO_INCLUDE += -I ../lib/modbusino
 ARDUINO_INCLUDE += -I ../lib/ArduinoRS485/src -I ../lib/ArduinoModbus/src
 INCLUDE := $(ARDUINO_INCLUDE)
@@ -33,8 +33,8 @@ ARDUINO_OBJS := ../lib/ArduinoCore-avr/cores/arduino/wiring.o \
                 ../lib/ArduinoCore-avr/cores/arduino/new.o \
                 ../lib/ArduinoCore-avr/cores/arduino/main.o \
                 ../lib/modbusino/Modbusino.o \
-		../lib/Wire/utility/twi.o \
-		../lib/Wire/Wire.o \
+		../lib/ArduinoCore-avr/libraries/Wire/src/utility/twi.o \
+		../lib/ArduinoCore-avr/libraries/Wire/src/Wire.o \
 		../lib/ArduinoRS485/src/RS485.o \
 		../lib/ArduinoModbus/src/libmodbus/modbus-rtu.o \
 		../lib/ArduinoModbus/src/libmodbus/modbus.o \
@@ -76,8 +76,8 @@ clean:
 	rm -f ../common/*.o
 	rm -f ../lib/ArduinoCore-avr/cores/arduino/*.o
 	rm -f ../lib/modbusino/*.o
-	rm -f ../lib/Wire/utility/*.o
-	rm -f ../lib/Wire/*.o
+	rm -f ../lib/ArduinoCore-avr/libraries/Wire/src/utility/*.o
+	rm -f ../lib/ArduinoCore-avr/libraries/Wire/src/*.o
 	rm -f ../lib/ArduinoRS485/src/*.o
 	rm -f ../lib/ArduinoModbus/src/libmodbus/*.o
 	rm -f ../lib/ArduinoModbus/src/*.o
