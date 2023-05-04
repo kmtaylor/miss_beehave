@@ -9,10 +9,12 @@ CPPFLAGS = -Wall -Os -mmcu=atmega$(CPU_TYPE) -DF_CPU=$(F_CPU)
 CPPFLAGS += -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums
 CPPFLAGS += -ffunction-sections -fdata-sections
 CPPFLAGS += -DARDUINO=200
+CPPFLAGS += -DMODBUS_MASTER
 CPPFLAGS += $(if $(GCC_VER_GE12), --param=min-pagesize=0)
 
 ARDUINO_INCLUDE := -I ../lib/arduino_lib -I ../lib/modbusino -I ../common
 ARDUINO_INCLUDE += -I ../lib/Wire -I ../lib/Wire/utility
+ARDUINO_INCLUDE += -I ../lib/ArduinoRS485/src -I ../lib/ArduinoModbus/src
 INCLUDE := $(ARDUINO_INCLUDE)
 
 LDFLAGS := -B /usr/avr/lib/avr5 -Wl,--gc-sections
@@ -24,10 +26,17 @@ ARDUINO_OBJS := ../lib/arduino_lib/wiring.o \
                 ../lib/arduino_lib/HardwareSerial0.o \
                 ../lib/arduino_lib/HardwareSerial1.o \
                 ../lib/arduino_lib/Print.o \
+                ../lib/arduino_lib/Stream.o \
+                ../lib/arduino_lib/new.o \
                 ../lib/arduino_lib/main.o \
                 ../lib/modbusino/Modbusino.o \
 		../lib/Wire/utility/twi.o \
-		../lib/Wire/Wire.o
+		../lib/Wire/Wire.o \
+		../lib/ArduinoRS485/src/RS485.o \
+		../lib/ArduinoModbus/src/libmodbus/modbus-rtu.o \
+		../lib/ArduinoModbus/src/libmodbus/modbus.o \
+		../lib/ArduinoModbus/src/ModbusRTUClient.o \
+		../lib/ArduinoModbus/src/ModbusClient.o
 
 OBJS = lower.o ../common/irq_task.o rugged_shield.o
 
@@ -66,6 +75,9 @@ clean:
 	rm -f ../lib/modbusino/*.o
 	rm -f ../lib/Wire/utility/*.o
 	rm -f ../lib/Wire/*.o
+	rm -f ../lib/ArduinoRS485/src/*.o
+	rm -f ../lib/ArduinoModbus/src/libmodbus/*.o
+	rm -f ../lib/ArduinoModbus/src/*.o
 
 cleanall: clean
 	rm -f $(TARGET).hex

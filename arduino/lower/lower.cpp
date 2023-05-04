@@ -1,5 +1,9 @@
 #include <Arduino.h>
-#include <Modbusino.h>
+#if MODBUS_MASTER
+    #include <ModbusRTUClient.h>
+#else
+    #include <Modbusino.h>
+#endif
 
 #include "irq_task.h"
 #include "rugged_shield.h"
@@ -36,16 +40,24 @@ enum modbus_regs_e {
     MB_REGS_SIZE,
 };
 
+static uint16_t mb_regs[MB_REGS_SIZE] = { MODBUS_IDLE };
+
+#if MODBUS_MASTER
+#else
 static void modbus_forward(uint8_t *msg, uint8_t msg_length) {
     Serial1.write(msg, msg_length);
 }
 
-static uint16_t mb_regs[MB_REGS_SIZE] = { MODBUS_IDLE };
 static ModbusinoSlave modbusino_slave(MODBUS_SLAVE, modbus_forward);
+#endif
 
 void setup() {
     pinMode(LED_BUILTIN, OUTPUT);
+#ifdef MODBUS_MASTER
+    ModbusRTUClient.begin(MODBUS_BAUD);
+#else
     modbusino_slave.setup(MODBUS_BAUD);
+#endif
     Serial1.begin(MODBUS_BAUD);
     irq_task_setup(irq_task);
     rugged_shield_setup();
@@ -69,6 +81,8 @@ void loop() {
         Serial.write(Serial1.read());
     }
 
+#ifdef MODBUS_MASTER
+#else
     if (modbusino_slave.loop(mb_regs, MB_REGS_SIZE) > 0) {
         MB_ACTION(MB_LED_STATE) {
             digitalWrite(LED_BUILTIN, mb_val);
@@ -78,5 +92,6 @@ void loop() {
             rugged_shield_write(mb_val);
         }
     }
+#endif
 }
 
