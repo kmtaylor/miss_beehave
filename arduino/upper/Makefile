@@ -11,20 +11,23 @@ CPPFLAGS += -ffunction-sections -fdata-sections
 CPPFLAGS += -DARDUINO=200
 CPPFLAGS += $(if $(GCC_VER_GE12), --param=min-pagesize=0)
 
-ARDUINO_INCLUDE := -I ../lib/arduino_lib -I ../lib/modbusino -I ../common
+ARDUINO_INCLUDE := -I ../lib/ArduinoCore-avr/cores/arduino
+ARDUINO_INCLUDE += -I ../lib/ArduinoCore-avr/variants/mega
+ARDUINO_INCLUDE += -I ../common
+ARDUINO_INCLUDE += -I ../lib/modbusino 
 ARDUINO_INCLUDE += -I ../lib/iBus/src
 INCLUDE := $(ARDUINO_INCLUDE)
 
 LDFLAGS := -B /usr/avr/lib/avr5 -Wl,--gc-sections
 
-ARDUINO_OBJS := ../lib/arduino_lib/wiring.o \
-                ../lib/arduino_lib/wiring_digital.o \
-                ../lib/arduino_lib/hooks.o \
-                ../lib/arduino_lib/HardwareSerial.o \
-                ../lib/arduino_lib/HardwareSerial0.o \
-                ../lib/arduino_lib/HardwareSerial2.o \
-                ../lib/arduino_lib/Print.o \
-                ../lib/arduino_lib/main.o \
+ARDUINO_OBJS := ../lib/ArduinoCore-avr/cores/arduino/wiring.o \
+                ../lib/ArduinoCore-avr/cores/arduino/wiring_digital.o \
+                ../lib/ArduinoCore-avr/cores/arduino/hooks.o \
+                ../lib/ArduinoCore-avr/cores/arduino/HardwareSerial.o \
+                ../lib/ArduinoCore-avr/cores/arduino/HardwareSerial0.o \
+                ../lib/ArduinoCore-avr/cores/arduino/HardwareSerial2.o \
+                ../lib/ArduinoCore-avr/cores/arduino/Print.o \
+                ../lib/ArduinoCore-avr/cores/arduino/main.o \
                 ../lib/modbusino/Modbusino.o \
 		../lib/iBus/src/iBus.o
 
@@ -61,7 +64,7 @@ program: $(TARGET).hex
 clean:
 	rm -f *.o
 	rm -f ../common/*.o
-	rm -f ../lib/arduino_lib/*.o
+	rm -f ../lib/ArduinoCore-avr/cores/arduino/*.o
 	rm -f ../lib/modbusino/*.o
 	rm -f ../lib/iBus/src/*.o
 

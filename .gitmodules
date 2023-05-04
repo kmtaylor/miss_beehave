@@ -14,3 +14,7 @@
 	path = arduino/lib/ArduinoModbus
 	url = https://github.com/arduino-libraries/ArduinoModbus.git
 	ignore = untracked
+[submodule "arduino/lib/ArduinoCore-avr"]
+	path = arduino/lib/ArduinoCore-avr
+	url = https://github.com/arduino/ArduinoCore-avr.git
+	ignore = untracked

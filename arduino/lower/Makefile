@@ -12,23 +12,26 @@ CPPFLAGS += -DARDUINO=200
 CPPFLAGS += -DMODBUS_MASTER
 CPPFLAGS += $(if $(GCC_VER_GE12), --param=min-pagesize=0)
 
-ARDUINO_INCLUDE := -I ../lib/arduino_lib -I ../lib/modbusino -I ../common
+ARDUINO_INCLUDE := -I ../lib/ArduinoCore-avr/cores/arduino
+ARDUINO_INCLUDE += -I ../lib/ArduinoCore-avr/variants/mega
+ARDUINO_INCLUDE += -I ../common
 ARDUINO_INCLUDE += -I ../lib/Wire -I ../lib/Wire/utility
+ARDUINO_INCLUDE += -I ../lib/modbusino
 ARDUINO_INCLUDE += -I ../lib/ArduinoRS485/src -I ../lib/ArduinoModbus/src
 INCLUDE := $(ARDUINO_INCLUDE)
 
 LDFLAGS := -B /usr/avr/lib/avr5 -Wl,--gc-sections
 
-ARDUINO_OBJS := ../lib/arduino_lib/wiring.o \
-                ../lib/arduino_lib/wiring_digital.o \
-                ../lib/arduino_lib/hooks.o \
-                ../lib/arduino_lib/HardwareSerial.o \
-                ../lib/arduino_lib/HardwareSerial0.o \
-                ../lib/arduino_lib/HardwareSerial1.o \
-                ../lib/arduino_lib/Print.o \
-                ../lib/arduino_lib/Stream.o \
-                ../lib/arduino_lib/new.o \
-                ../lib/arduino_lib/main.o \
+ARDUINO_OBJS := ../lib/ArduinoCore-avr/cores/arduino/wiring.o \
+                ../lib/ArduinoCore-avr/cores/arduino/wiring_digital.o \
+                ../lib/ArduinoCore-avr/cores/arduino/hooks.o \
+                ../lib/ArduinoCore-avr/cores/arduino/HardwareSerial.o \
+                ../lib/ArduinoCore-avr/cores/arduino/HardwareSerial0.o \
+                ../lib/ArduinoCore-avr/cores/arduino/HardwareSerial1.o \
+                ../lib/ArduinoCore-avr/cores/arduino/Print.o \
+                ../lib/ArduinoCore-avr/cores/arduino/Stream.o \
+                ../lib/ArduinoCore-avr/cores/arduino/new.o \
+                ../lib/ArduinoCore-avr/cores/arduino/main.o \
                 ../lib/modbusino/Modbusino.o \
 		../lib/Wire/utility/twi.o \
 		../lib/Wire/Wire.o \
@@ -71,7 +74,7 @@ program: $(TARGET).hex
 clean:
 	rm -f *.o
 	rm -f ../common/*.o
-	rm -f ../lib/arduino_lib/*.o
+	rm -f ../lib/ArduinoCore-avr/cores/arduino/*.o
 	rm -f ../lib/modbusino/*.o
 	rm -f ../lib/Wire/utility/*.o
 	rm -f ../lib/Wire/*.o
