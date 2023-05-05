@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #if MODBUS_MASTER
     #include <ModbusRTUClient.h>
+    #include <iBus.h>
 #else
     #include <Modbusino.h>
 #endif
@@ -32,6 +33,9 @@ static void irq_task(void) {
     }
 }
 
+#if MODBUS_MASTER
+static iBus rc_ibus(Serial2);
+#else
 enum modbus_regs_e {
     MB_LED_STATE = 0,
     MB_ADC_VAL0,
@@ -42,8 +46,6 @@ enum modbus_regs_e {
 
 static uint16_t mb_regs[MB_REGS_SIZE] = { MODBUS_IDLE };
 
-#if MODBUS_MASTER
-#else
 static void modbus_forward(uint8_t *msg, uint8_t msg_length) {
     Serial1.write(msg, msg_length);
 }
@@ -53,20 +55,46 @@ static ModbusinoSlave modbusino_slave(MODBUS_SLAVE, modbus_forward);
 
 void setup() {
     pinMode(LED_BUILTIN, OUTPUT);
-#ifdef MODBUS_MASTER
-    ModbusRTUClient.begin(MODBUS_BAUD);
-#else
-    modbusino_slave.setup(MODBUS_BAUD);
-#endif
-    Serial1.begin(MODBUS_BAUD);
     irq_task_setup(irq_task);
     rugged_shield_setup();
+#ifdef MODBUS_MASTER
+    ModbusRTUClient.begin(MODBUS_BAUD);
+    rc_ibus.begin();
+#else
+    modbusino_slave.setup(MODBUS_BAUD);
+    Serial1.begin(MODBUS_BAUD);
+#endif
 }
 
-#define MB_ACTION(offset) if (((mb_val = mb_regs[offset]) != MODBUS_IDLE) \
-                                && (mb_regs[offset] = MODBUS_IDLE))
 
 void loop() {
+#ifdef MODBUS_MASTER
+    uint16_t rc_left_right, rc_forward_back, rc_valid;
+    /* Read remote control - check for safety, then pass scaled instructions
+     * on to roboteq */
+    rc_ibus.process();
+    if (rc_ibus.available()) {
+        rc_left_right = rc_ibus.get(1);
+        rc_forward_back = rc_ibus.get(4);
+        rc_valid = rc_ibus.get(7) && rc_ibus.get(6) && rc_ibus.get(5);
+    } else {
+        /* Lost iBus connection to RC module */
+        rc_valid = 0;
+    }
+    if (!rc_valid) {
+        /* Peform emergency stop */
+    } else {
+        /* Update roboteq with RC values */
+        ModbusRTUClient.beginTransmission(1, HOLDING_REGISTERS, 1, 2);
+        ModbusRTUClient.write(rc_forward_back);
+        ModbusRTUClient.endTransmission(); // blocks
+        ModbusRTUClient.beginTransmission(1, HOLDING_REGISTERS, 2, 2);
+        ModbusRTUClient.write(rc_left_right);
+        ModbusRTUClient.endTransmission();
+    }
+#else
+    #define MB_ACTION(offset) if (((mb_val = mb_regs[offset]) != MODBUS_IDLE) \
+                                && (mb_regs[offset] = MODBUS_IDLE))
     uint16_t mb_val;
     int8_t adc_channel;
 
@@ -81,8 +109,6 @@ void loop() {
         Serial.write(Serial1.read());
     }
 
-#ifdef MODBUS_MASTER
-#else
     if (modbusino_slave.loop(mb_regs, MB_REGS_SIZE) > 0) {
         MB_ACTION(MB_LED_STATE) {
             digitalWrite(LED_BUILTIN, mb_val);

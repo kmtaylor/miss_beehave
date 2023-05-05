@@ -18,6 +18,7 @@ ARDUINO_INCLUDE += -I ../lib/ArduinoCore-avr/libraries/Wire/src
 ARDUINO_INCLUDE += -I ../common
 ARDUINO_INCLUDE += -I ../lib/modbusino
 ARDUINO_INCLUDE += -I ../lib/ArduinoRS485/src -I ../lib/ArduinoModbus/src
+ARDUINO_INCLUDE += -I ../lib/iBus/src
 INCLUDE := $(ARDUINO_INCLUDE)
 
 LDFLAGS := -B /usr/avr/lib/avr5 -Wl,--gc-sections
@@ -28,6 +29,7 @@ ARDUINO_OBJS := ../lib/ArduinoCore-avr/cores/arduino/wiring.o \
                 ../lib/ArduinoCore-avr/cores/arduino/HardwareSerial.o \
                 ../lib/ArduinoCore-avr/cores/arduino/HardwareSerial0.o \
                 ../lib/ArduinoCore-avr/cores/arduino/HardwareSerial1.o \
+                ../lib/ArduinoCore-avr/cores/arduino/HardwareSerial2.o \
                 ../lib/ArduinoCore-avr/cores/arduino/Print.o \
                 ../lib/ArduinoCore-avr/cores/arduino/Stream.o \
                 ../lib/ArduinoCore-avr/cores/arduino/new.o \
@@ -39,7 +41,8 @@ ARDUINO_OBJS := ../lib/ArduinoCore-avr/cores/arduino/wiring.o \
 		../lib/ArduinoModbus/src/libmodbus/modbus-rtu.o \
 		../lib/ArduinoModbus/src/libmodbus/modbus.o \
 		../lib/ArduinoModbus/src/ModbusRTUClient.o \
-		../lib/ArduinoModbus/src/ModbusClient.o
+		../lib/ArduinoModbus/src/ModbusClient.o \
+		../lib/iBus/src/iBus.o
 
 OBJS = lower.o ../common/irq_task.o rugged_shield.o
 
@@ -81,6 +84,7 @@ clean:
 	rm -f ../lib/ArduinoRS485/src/*.o
 	rm -f ../lib/ArduinoModbus/src/libmodbus/*.o
 	rm -f ../lib/ArduinoModbus/src/*.o
+	rm -f ../lib/iBus/src/*.o
 
 cleanall: clean
 	rm -f $(TARGET).hex
