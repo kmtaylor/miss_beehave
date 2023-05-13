@@ -35,6 +35,30 @@ static void irq_task(void) {
 
 #if MODBUS_MASTER
 static iBus rc_ibus(Serial2);
+static RS485Class roboteq_rs485(Serial1, 18, -1, -1);
+static ModbusRTUClientClass roboteq_modbus(roboteq_rs485); 
+
+static void update_roboteq(uint16_t addr, uint16_t val) {
+    int status, i, j = 0;
+
+    ModbusRTUClient.beginTransmission(1, HOLDING_REGISTERS, addr, 2);
+    ModbusRTUClient.write(val);
+    status = ModbusRTUClient.endTransmission(); // blocks
+
+    if (!status) {
+        /* No response from roboteq, try and flush out any init data */
+        for (i = 0; i < 64; i++) {
+            Serial1.write(0);
+        }
+        do {
+            for (i = 0; i < 64; i++) {
+                Serial1.read();
+            }
+            delay(10);
+        } while (Serial1.available() && j++ < 10);
+    }
+}
+
 #else
 enum modbus_regs_e {
     MB_LED_STATE = 0,
@@ -70,28 +94,31 @@ void setup() {
 void loop() {
 #ifdef MODBUS_MASTER
     uint16_t rc_left_right, rc_forward_back, rc_valid;
+    uint16_t left_drive, right_drive;
     /* Read remote control - check for safety, then pass scaled instructions
      * on to roboteq */
     rc_ibus.process();
     if (rc_ibus.available()) {
         rc_left_right = rc_ibus.get(1);
         rc_forward_back = rc_ibus.get(4);
-        rc_valid = rc_ibus.get(7) && rc_ibus.get(6) && rc_ibus.get(5);
+        rc_valid = rc_ibus.get(7) && rc_ibus.get(0) &&
+                   rc_ibus.get(6) && rc_ibus.get(5);
     } else {
         /* Lost iBus connection to RC module */
         rc_valid = 0;
     }
     if (!rc_valid) {
         /* Peform emergency stop */
+        left_drive = 0;
+        right_drive = 0;
     } else {
         /* Update roboteq with RC values */
-        ModbusRTUClient.beginTransmission(1, HOLDING_REGISTERS, 1, 2);
-        ModbusRTUClient.write(rc_forward_back);
-        ModbusRTUClient.endTransmission(); // blocks
-        ModbusRTUClient.beginTransmission(1, HOLDING_REGISTERS, 2, 2);
-        ModbusRTUClient.write(rc_left_right);
-        ModbusRTUClient.endTransmission();
+        left_drive = rc_forward_back * rc_left_right;
+        right_drive = rc_forward_back * rc_left_right;
+        
     }
+    update_roboteq(1, left_drive);
+    update_roboteq(2, right_drive);
 #else
     #define MB_ACTION(offset) if (((mb_val = mb_regs[offset]) != MODBUS_IDLE) \
                                 && (mb_regs[offset] = MODBUS_IDLE))
