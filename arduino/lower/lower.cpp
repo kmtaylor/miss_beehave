@@ -41,9 +41,9 @@ static ModbusRTUClientClass roboteq_modbus(roboteq_rs485);
 static void update_roboteq(uint16_t addr, uint16_t val) {
     int status, i, j = 0;
 
-    ModbusRTUClient.beginTransmission(1, HOLDING_REGISTERS, addr, 2);
-    ModbusRTUClient.write(val);
-    status = ModbusRTUClient.endTransmission(); // blocks
+    roboteq_modbus.beginTransmission(1, HOLDING_REGISTERS, addr, 2);
+    roboteq_modbus.write(val);
+    status = roboteq_modbus.endTransmission(); // blocks
 
     if (!status) {
         /* No response from roboteq, try and flush out any init data */
@@ -81,8 +81,9 @@ void setup() {
     pinMode(LED_BUILTIN, OUTPUT);
     irq_task_setup(irq_task);
     rugged_shield_setup();
+    Serial.begin(115200);
 #ifdef MODBUS_MASTER
-    ModbusRTUClient.begin(MODBUS_BAUD);
+    //roboteq_modbus.begin(MODBUS_BAUD);
     rc_ibus.begin();
 #else
     modbusino_slave.setup(MODBUS_BAUD);
@@ -97,6 +98,7 @@ void loop() {
     uint16_t left_drive, right_drive;
     /* Read remote control - check for safety, then pass scaled instructions
      * on to roboteq */
+#if 0
     rc_ibus.process();
     if (rc_ibus.available()) {
         rc_left_right = rc_ibus.get(1);
@@ -117,8 +119,15 @@ void loop() {
         right_drive = rc_forward_back * rc_left_right;
         
     }
-    update_roboteq(1, left_drive);
-    update_roboteq(2, right_drive);
+    //update_roboteq(1, left_drive);
+    //update_roboteq(2, right_drive);
+
+#endif
+    static int i;
+    if (i-- == 0) {
+        Serial.print("hello\r\n");
+        i = 100000;
+    }
 #else
     #define MB_ACTION(offset) if (((mb_val = mb_regs[offset]) != MODBUS_IDLE) \
                                 && (mb_regs[offset] = MODBUS_IDLE))
