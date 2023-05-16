@@ -67,7 +67,7 @@ $(TARGET).elf: $(OBJS) $(ARDUINO_OBJS)
 
 program: $(TARGET).hex
 	avrdude -p m$(CPU_TYPE) -c wiring -D -U flash:w:$(TARGET).hex \
-		-P /dev/ttyACM0
+		-P /dev/ttyUSB0
 clean:
 	rm -f *.o
 	rm -f ../common/*.o

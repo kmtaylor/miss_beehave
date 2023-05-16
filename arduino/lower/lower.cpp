@@ -69,17 +69,17 @@ static void update_roboteq(uint16_t addr, uint16_t val) {
                           0x00, 0x00,       // 4 bytes, first two unused
                           0x00, 0x00,       // Value
                           0x00, 0x00 };     // Checksum
-    uint16_t crc = crc16(message, 11);
 
     message[ 2] = addr >> 8;
     message[ 3] = addr & 0xff;
     message[ 9] = val >> 8;
     message[10] = val & 0xff;
+
+    uint16_t crc = crc16(message, 11);
     message[11] = crc >> 8;
     message[12] = crc & 0xff;
 
-    //Serial1.write(message, 13);
-    Serial.write(message, 13);
+    Serial1.write(message, 13);
 }
 
 #else
@@ -117,9 +117,10 @@ void setup() {
 
 void loop() {
 #ifdef MODBUS_MASTER
-    uint16_t rc_left_right, rc_forward_back, rc_valid;
-    uint16_t roboteq_drive[2];
+    uint8_t rc_valid;
     int8_t roboteq_channel = roboteq_ctx;
+    int16_t rc_left_right, rc_forward_back;
+    int16_t roboteq_drive[2];
 
     /* Read remote control - check for safety, then pass scaled instructions
      * on to roboteq */
@@ -127,9 +128,9 @@ void loop() {
     rc_ibus.process();
     if (rc_ibus.available()) {
         rc_left_right = rc_ibus.get(1);
-        rc_forward_back = rc_ibus.get(4);
-        rc_valid = rc_ibus.get(7) && rc_ibus.get(0) &&
-                   rc_ibus.get(6) && rc_ibus.get(5);
+        rc_forward_back = rc_ibus.get(3);
+        rc_valid = (rc_ibus.get(0) == 1) &&
+                   (rc_ibus.get(5) == 2000) && (rc_ibus.get(6) == 2000);
     } else {
         /* Lost iBus connection to RC module */
         rc_valid = 0;
@@ -140,13 +141,33 @@ void loop() {
         roboteq_drive[1] = 0;
     } else {
         /* Update roboteq with RC values */
-        roboteq_drive[0] = rc_forward_back * rc_left_right;
-        roboteq_drive[1] = rc_forward_back * rc_left_right;
-        
+        if (rc_left_right > 1500) {
+            if (rc_forward_back > 1500) {
+                roboteq_drive[0] = (rc_forward_back - 1500);
+                roboteq_drive[1] = (rc_forward_back - 1500) - 0.5*(rc_left_right - 1500);
+            } else {
+                roboteq_drive[0] = (rc_forward_back - 1500);
+                roboteq_drive[1] = (rc_forward_back - 1500) + 0.5*(rc_left_right - 1500);
+            }
+        } else {
+            if (rc_forward_back > 1500) {
+                roboteq_drive[0] = (rc_forward_back - 1500) + 0.5*(rc_left_right - 1500);
+                roboteq_drive[1] = (rc_forward_back - 1500);
+            } else {
+                roboteq_drive[0] = (rc_forward_back - 1500) - 0.5*(rc_left_right - 1500);
+                roboteq_drive[1] = (rc_forward_back - 1500);
+            }
+        }
     }
 
     if (roboteq_channel >= 0) {
         update_roboteq(roboteq_channel + 1, roboteq_drive[roboteq_channel]);
+        Serial.print("drive 0: ");
+        Serial.print(roboteq_drive[0]);
+        Serial.print("\t");
+        Serial.print("drive 1: ");
+        Serial.print(roboteq_drive[1]);
+        Serial.print("\r\n");
         roboteq_ctx = -1;
     }
 
