@@ -1,6 +1,5 @@
 #include <Arduino.h>
 #if MODBUS_MASTER
-    #include <ModbusRTUClient.h>
     #include <iBus.h>
 #else
     #include <Modbusino.h>
@@ -17,14 +16,23 @@
 
 /* Read ADC over I2C when not equal to -1 */
 static volatile int8_t adc_ctx = -1;
+static volatile int8_t roboteq_ctx = -1;
 
 static void irq_task(void) {
-    static uint16_t i;
+    static uint16_t i, j;
     static uint8_t val;
     static int8_t adc_channel;
+    static int8_t roboteq_channel;
 
     adc_channel = (adc_channel + 1) % ADC_NUM_CHANNELS;
     adc_ctx = adc_channel;
+
+    if (j-- == 0) {
+        /* Update roboteq every 100ms */
+        roboteq_channel = (roboteq_channel + 1) % 2;
+        roboteq_ctx = roboteq_channel;
+        j = IRQ_TASK_RATE_HZ/10;
+    }
 
     if (i-- == 0) {
         digitalWrite(LED_BUILTIN, val);
@@ -35,28 +43,43 @@ static void irq_task(void) {
 
 #if MODBUS_MASTER
 static iBus rc_ibus(Serial2);
-static RS485Class roboteq_rs485(Serial1, 18, -1, -1);
-static ModbusRTUClientClass roboteq_modbus(roboteq_rs485); 
+
+static uint16_t crc16(uint8_t *req, uint8_t req_length) {
+    uint8_t j;
+    uint16_t crc;
+
+    crc = 0xFFFF;
+    while (req_length--) {
+        crc = crc ^ *req++;
+        for (j = 0; j < 8; j++) {
+            if (crc & 0x0001)
+                crc = (crc >> 1) ^ 0xA001;
+            else
+                crc = crc >> 1;
+        }
+    }
+
+    return (crc << 8 | crc >> 8);
+}
 
 static void update_roboteq(uint16_t addr, uint16_t val) {
-    int status, i, j = 0;
+    uint8_t message[] = { 0x01, 0x10,       // Write holding registers to unit 1
+                          0x00, 0x00,       // Register address
+                          0x00, 0x02, 0x04, // Write two registers (roboteq requirement)
+                          0x00, 0x00,       // 4 bytes, first two unused
+                          0x00, 0x00,       // Value
+                          0x00, 0x00 };     // Checksum
+    uint16_t crc = crc16(message, 11);
 
-    roboteq_modbus.beginTransmission(1, HOLDING_REGISTERS, addr, 2);
-    roboteq_modbus.write(val);
-    status = roboteq_modbus.endTransmission(); // blocks
+    message[ 2] = addr >> 8;
+    message[ 3] = addr & 0xff;
+    message[ 9] = val >> 8;
+    message[10] = val & 0xff;
+    message[11] = crc >> 8;
+    message[12] = crc & 0xff;
 
-    if (!status) {
-        /* No response from roboteq, try and flush out any init data */
-        for (i = 0; i < 64; i++) {
-            Serial1.write(0);
-        }
-        do {
-            for (i = 0; i < 64; i++) {
-                Serial1.read();
-            }
-            delay(10);
-        } while (Serial1.available() && j++ < 10);
-    }
+    //Serial1.write(message, 13);
+    Serial.write(message, 13);
 }
 
 #else
@@ -81,9 +104,9 @@ void setup() {
     pinMode(LED_BUILTIN, OUTPUT);
     irq_task_setup(irq_task);
     rugged_shield_setup();
-    Serial.begin(115200);
 #ifdef MODBUS_MASTER
-    //roboteq_modbus.begin(MODBUS_BAUD);
+    Serial.begin(115200);
+    Serial1.begin(MODBUS_BAUD);
     rc_ibus.begin();
 #else
     modbusino_slave.setup(MODBUS_BAUD);
@@ -95,10 +118,12 @@ void setup() {
 void loop() {
 #ifdef MODBUS_MASTER
     uint16_t rc_left_right, rc_forward_back, rc_valid;
-    uint16_t left_drive, right_drive;
+    uint16_t roboteq_drive[2];
+    int8_t roboteq_channel = roboteq_ctx;
+
     /* Read remote control - check for safety, then pass scaled instructions
      * on to roboteq */
-#if 0
+
     rc_ibus.process();
     if (rc_ibus.available()) {
         rc_left_right = rc_ibus.get(1);
@@ -111,23 +136,25 @@ void loop() {
     }
     if (!rc_valid) {
         /* Peform emergency stop */
-        left_drive = 0;
-        right_drive = 0;
+        roboteq_drive[0] = 0;
+        roboteq_drive[1] = 0;
     } else {
         /* Update roboteq with RC values */
-        left_drive = rc_forward_back * rc_left_right;
-        right_drive = rc_forward_back * rc_left_right;
+        roboteq_drive[0] = rc_forward_back * rc_left_right;
+        roboteq_drive[1] = rc_forward_back * rc_left_right;
         
     }
-    //update_roboteq(1, left_drive);
-    //update_roboteq(2, right_drive);
 
-#endif
-    static int i;
-    if (i-- == 0) {
-        Serial.print("hello\r\n");
-        i = 100000;
+    if (roboteq_channel >= 0) {
+        update_roboteq(roboteq_channel + 1, roboteq_drive[roboteq_channel]);
+        roboteq_ctx = -1;
     }
+
+    /*
+    while (Serial1.available()) {
+        Serial.write(Serial1.read());
+    }
+    */
 #else
     #define MB_ACTION(offset) if (((mb_val = mb_regs[offset]) != MODBUS_IDLE) \
                                 && (mb_regs[offset] = MODBUS_IDLE))
