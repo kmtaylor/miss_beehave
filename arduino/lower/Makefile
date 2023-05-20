@@ -17,7 +17,6 @@ ARDUINO_INCLUDE += -I ../lib/ArduinoCore-avr/variants/mega
 ARDUINO_INCLUDE += -I ../lib/ArduinoCore-avr/libraries/Wire/src
 ARDUINO_INCLUDE += -I ../common
 ARDUINO_INCLUDE += -I ../lib/modbusino
-ARDUINO_INCLUDE += -I ../lib/ArduinoRS485/src -I ../lib/ArduinoModbus/src
 ARDUINO_INCLUDE += -I ../lib/iBus/src
 INCLUDE := $(ARDUINO_INCLUDE)
 
@@ -37,11 +36,6 @@ ARDUINO_OBJS := ../lib/ArduinoCore-avr/cores/arduino/wiring.o \
                 ../lib/modbusino/Modbusino.o \
 		../lib/ArduinoCore-avr/libraries/Wire/src/utility/twi.o \
 		../lib/ArduinoCore-avr/libraries/Wire/src/Wire.o \
-		../lib/ArduinoRS485/src/RS485.o \
-		../lib/ArduinoModbus/src/libmodbus/modbus-rtu.o \
-		../lib/ArduinoModbus/src/libmodbus/modbus.o \
-		../lib/ArduinoModbus/src/ModbusRTUClient.o \
-		../lib/ArduinoModbus/src/ModbusClient.o \
 		../lib/iBus/src/iBus.o
 
 OBJS = lower.o ../common/irq_task.o rugged_shield.o
@@ -81,9 +75,6 @@ clean:
 	rm -f ../lib/modbusino/*.o
 	rm -f ../lib/ArduinoCore-avr/libraries/Wire/src/utility/*.o
 	rm -f ../lib/ArduinoCore-avr/libraries/Wire/src/*.o
-	rm -f ../lib/ArduinoRS485/src/*.o
-	rm -f ../lib/ArduinoModbus/src/libmodbus/*.o
-	rm -f ../lib/ArduinoModbus/src/*.o
 	rm -f ../lib/iBus/src/*.o
 
 cleanall: clean
