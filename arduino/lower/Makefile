@@ -38,7 +38,7 @@ ARDUINO_OBJS := ../lib/ArduinoCore-avr/cores/arduino/wiring.o \
 		../lib/ArduinoCore-avr/libraries/Wire/src/Wire.o \
 		../lib/iBus/src/iBus.o
 
-OBJS = lower.o ../common/irq_task.o rugged_shield.o
+OBJS = lower.o ../common/irq_task.o ../common/crc16.o rugged_shield.o
 
 FORMAT = ihex
 

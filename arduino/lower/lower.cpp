@@ -1,12 +1,10 @@
 #include <Arduino.h>
-#if MODBUS_MASTER
-    #include <iBus.h>
-#else
-    #include <Modbusino.h>
-#endif
+#include <iBus.h>
+#include <Modbusino.h>
 
 #include "irq_task.h"
 #include "rugged_shield.h"
+#include "crc16.h"
 
 #define MODBUS_BAUD     115200
 #define MODBUS_SLAVE    3
@@ -41,27 +39,6 @@ static void irq_task(void) {
     }
 }
 
-#if MODBUS_MASTER
-static iBus rc_ibus(Serial2);
-
-static uint16_t crc16(uint8_t *req, uint8_t req_length) {
-    uint8_t j;
-    uint16_t crc;
-
-    crc = 0xFFFF;
-    while (req_length--) {
-        crc = crc ^ *req++;
-        for (j = 0; j < 8; j++) {
-            if (crc & 0x0001)
-                crc = (crc >> 1) ^ 0xA001;
-            else
-                crc = crc >> 1;
-        }
-    }
-
-    return (crc << 8 | crc >> 8);
-}
-
 static void update_roboteq(uint16_t addr, uint16_t val) {
     uint8_t message[] = { 0x01, 0x10,       // Write holding registers to unit 1
                           0x00, 0x00,       // Register address
@@ -82,45 +59,38 @@ static void update_roboteq(uint16_t addr, uint16_t val) {
     Serial1.write(message, 13);
 }
 
-#else
 enum modbus_regs_e {
     MB_LED_STATE = 0,
     MB_ADC_VAL0,
     MB_ADC_VAL1,
     MB_SHIELD_OUT,
+    MB_DRIVE0,
+    MB_DRIVE1,
     MB_REGS_SIZE,
 };
 
 static uint16_t mb_regs[MB_REGS_SIZE] = { MODBUS_IDLE };
 
-static void modbus_forward(uint8_t *msg, uint8_t msg_length) {
-    Serial1.write(msg, msg_length);
-}
-
-static ModbusinoSlave modbusino_slave(MODBUS_SLAVE, modbus_forward);
-#endif
+static ModbusinoSlave modbusino_slave(MODBUS_SLAVE);
+static iBus rc_ibus(Serial2);
 
 void setup() {
     pinMode(LED_BUILTIN, OUTPUT);
     irq_task_setup(irq_task);
     rugged_shield_setup();
-#ifdef MODBUS_MASTER
-    Serial.begin(115200);
     Serial1.begin(MODBUS_BAUD);
     rc_ibus.begin();
-#else
     modbusino_slave.setup(MODBUS_BAUD);
-    Serial1.begin(MODBUS_BAUD);
-#endif
 }
 
 
 void loop() {
-#ifdef MODBUS_MASTER
     uint8_t rc_valid;
-    int8_t roboteq_channel = roboteq_ctx;
     int16_t rc_left_right, rc_forward_back;
     int16_t roboteq_drive[2];
+    uint16_t mb_val;
+    int8_t roboteq_channel = roboteq_ctx;
+    int8_t adc_channel = adc_ctx;
 
     /* Read remote control - check for safety, then pass scaled instructions
      * on to roboteq */
@@ -162,36 +132,18 @@ void loop() {
 
     if (roboteq_channel >= 0) {
         update_roboteq(roboteq_channel + 1, roboteq_drive[roboteq_channel]);
-        Serial.print("drive 0: ");
-        Serial.print(roboteq_drive[0]);
-        Serial.print("\t");
-        Serial.print("drive 1: ");
-        Serial.print(roboteq_drive[1]);
-        Serial.print("\r\n");
+        mb_regs[roboteq_channel == 0 ? MB_DRIVE0 : MB_DRIVE1] = roboteq_drive[roboteq_channel];
         roboteq_ctx = -1;
     }
 
-    /*
-    while (Serial1.available()) {
-        Serial.write(Serial1.read());
-    }
-    */
-#else
-    #define MB_ACTION(offset) if (((mb_val = mb_regs[offset]) != MODBUS_IDLE) \
-                                && (mb_regs[offset] = MODBUS_IDLE))
-    uint16_t mb_val;
-    int8_t adc_channel;
-
-    adc_channel = adc_ctx;
     if (adc_channel >= 0) {
         mb_regs[adc_channel == 0 ? MB_ADC_VAL0 : MB_ADC_VAL1] = 
             rugged_shield_read_adc(adc_channel);
         adc_ctx = -1;
     }
 
-    while (Serial1.available()) {
-        Serial.write(Serial1.read());
-    }
+    #define MB_ACTION(offset) if (((mb_val = mb_regs[offset]) != MODBUS_IDLE) \
+                                && (mb_regs[offset] = MODBUS_IDLE))
 
     if (modbusino_slave.loop(mb_regs, MB_REGS_SIZE) > 0) {
         MB_ACTION(MB_LED_STATE) {
@@ -202,6 +154,5 @@ void loop() {
             rugged_shield_write(mb_val);
         }
     }
-#endif
 }
 
