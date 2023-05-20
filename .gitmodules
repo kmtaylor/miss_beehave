@@ -6,14 +6,6 @@
 	path = arduino/lib/iBus
 	url = https://github.com/VICLER/iBus.git
 	ignore = untracked
-[submodule "arduino/lib/ArduinoRS485"]
-	path = arduino/lib/ArduinoRS485
-	url = https://github.com/arduino-libraries/ArduinoRS485.git
-	ignore = untracked
-[submodule "arduino/lib/ArduinoModbus"]
-	path = arduino/lib/ArduinoModbus
-	url = https://github.com/arduino-libraries/ArduinoModbus.git
-	ignore = untracked
 [submodule "arduino/lib/ArduinoCore-avr"]
 	path = arduino/lib/ArduinoCore-avr
 	url = https://github.com/arduino/ArduinoCore-avr.git
