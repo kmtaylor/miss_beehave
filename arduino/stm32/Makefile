@@ -21,6 +21,7 @@ program:
 	dfu-util -D $(TARGET).dfu
 
 OBJS := hello_world.o
+OBJS += ../lib/modbusino/Modbusino.o
 
 CFLAGS := -DARDUINO_ARCH_STM32
 CFLAGS += -DARDUINO_GENERIC_F207VCTX
@@ -32,6 +33,7 @@ CFLAGS += -DUSE_FULL_LL_DRIVER
 CFLAGS += -DUSBCON -DUSBD_VID=0 -DUSBD_PID=0
 CFLAGS += -DHAL_UART_MODULE_ENABLED
 CFLAGS += -DHAL_PCD_MODULE_ENABLED -DUSBD_USE_CDC
+CFLAGS += -DARDUINO=200
 CFLAGS += --param max-inline-insns-single=500 
 CFLAGS += -ffunction-sections -fdata-sections -fno-exceptions 
 CFLAGS += -Os -mcpu=cortex-m3 -mthumb
@@ -62,6 +64,7 @@ INCLUDE += -I$(ARDUINO_CORE)/system/Drivers/STM32F2xx_HAL_Driver/Src
 INCLUDE += -I$(ARDUINO_DRIVERS)/CMSIS/Device/ST/STM32F2xx/Include 
 INCLUDE += -I$(ARDUINO_DRIVERS)/CMSIS/Device/ST/STM32F2xx/Source/Templates/gcc
 INCLUDE += -I$(ARDUINO_CORE)/variants/$(VARIANT)
+INCLUDE += -I ../lib/modbusino 
 INCLUDE := $(call quote, $(INCLUDE))
 
 OBJS += $(ARDUINO_CORE)/cores/arduino/main.o
@@ -73,6 +76,8 @@ OBJS += $(ARDUINO_CORE)/cores/arduino/USBSerial.o
 OBJS += $(ARDUINO_CORE)/cores/arduino/WSerial.o
 OBJS += $(ARDUINO_CORE)/cores/arduino/HardwareSerial.o
 OBJS += $(ARDUINO_CORE)/cores/arduino/wiring_time.o
+OBJS += $(ARDUINO_CORE)/cores/arduino/wiring_digital.o
+OBJS += $(ARDUINO_CORE)/cores/arduino/wiring_analog.o
 OBJS += $(ARDUINO_CORE)/cores/arduino/stm32/startup_stm32yyxx.o
 OBJS += $(ARDUINO_CORE)/cores/arduino/stm32/usb/cdc/usbd_cdc_if.o
 OBJS += $(ARDUINO_CORE)/cores/arduino/stm32/usb/cdc/usbd_cdc.o
@@ -87,6 +92,8 @@ OBJS += $(ARDUINO_CORE)/cores/arduino/stm32/usb/usbd_desc.o
 OBJS += $(ARDUINO_CORE)/variants/$(VARIANT)/generic_clock.o
 OBJS += $(ARDUINO_CORE)/variants/$(VARIANT)/PeripheralPins.o
 OBJS += $(ARDUINO_CORE)/variants/$(VARIANT)/variant_generic.o
+OBJS += $(ARDUINO_CORE)/libraries/SrcWrapper/src/syscalls.o
+OBJS += $(ARDUINO_CORE)/libraries/SrcWrapper/src/HardwareTimer.o
 OBJS += $(ARDUINO_CORE)/libraries/SrcWrapper/src/stm32/system_stm32yyxx.o
 OBJS += $(ARDUINO_CORE)/libraries/SrcWrapper/src/stm32/clock.o
 OBJS += $(ARDUINO_CORE)/libraries/SrcWrapper/src/stm32/pinmap.o
@@ -94,6 +101,8 @@ OBJS += $(ARDUINO_CORE)/libraries/SrcWrapper/src/stm32/uart.o
 OBJS += $(ARDUINO_CORE)/libraries/SrcWrapper/src/stm32/dwt.o
 OBJS += $(ARDUINO_CORE)/libraries/SrcWrapper/src/stm32/PortNames.o
 OBJS += $(ARDUINO_CORE)/libraries/SrcWrapper/src/stm32/hw_config.o
+OBJS += $(ARDUINO_CORE)/libraries/SrcWrapper/src/stm32/analog.o
+OBJS += $(ARDUINO_CORE)/libraries/SrcWrapper/src/stm32/timer.o
 OBJS += $(ARDUINO_CORE)/libraries/SrcWrapper/src/HAL/stm32yyxx_hal.o
 OBJS += $(ARDUINO_CORE)/libraries/SrcWrapper/src/HAL/stm32yyxx_hal_uart.o
 OBJS += $(ARDUINO_CORE)/libraries/SrcWrapper/src/HAL/stm32yyxx_hal_dma.o
@@ -103,6 +112,9 @@ OBJS += $(ARDUINO_CORE)/libraries/SrcWrapper/src/HAL/stm32yyxx_hal_pcd_ex.o
 OBJS += $(ARDUINO_CORE)/libraries/SrcWrapper/src/HAL/stm32yyxx_hal_rcc.o
 OBJS += $(ARDUINO_CORE)/libraries/SrcWrapper/src/HAL/stm32yyxx_hal_cortex.o
 OBJS += $(ARDUINO_CORE)/libraries/SrcWrapper/src/LL/stm32yyxx_ll_usb.o
+OBJS += $(ARDUINO_DRIVERS)/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_dac.o
+OBJS += $(ARDUINO_DRIVERS)/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_tim.o
+OBJS += $(ARDUINO_DRIVERS)/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_tim_ex.o
 
 $(TARGET).bin: $(TARGET).elf
 	$(ARM-OBJCOPY) -O binary $< $@
