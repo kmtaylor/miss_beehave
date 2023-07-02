@@ -57,7 +57,7 @@ INCLUDE += -I$(ARDUINO_CORE)/cores/arduino/stm32/usb
 INCLUDE += -I$(ARDUINO_CORE)/cores/arduino/stm32/usb/cdc 
 INCLUDE += -I$(ARDUINO_MIDDLEWARES)/ST/STM32_USB_Device_Library/Core/Inc 
 INCLUDE += -I$(ARDUINO_MIDDLEWARES)/ST/STM32_USB_Device_Library/Core/Src 
-INCLUDE += -I../lib/CMSIS/CMSIS/Core/Include 
+INCLUDE += -I../lib/CMSIS_5/CMSIS/Core/Include 
 INCLUDE += -I$(ARDUINO_CORE)/system/STM32F2xx 
 INCLUDE += -I$(ARDUINO_CORE)/system/Drivers/STM32F2xx_HAL_Driver/Inc 
 INCLUDE += -I$(ARDUINO_CORE)/system/Drivers/STM32F2xx_HAL_Driver/Src 
@@ -139,4 +139,9 @@ $(TARGET).elf: $(OBJS)
 clean:
 	rm -f $(call quote, $(OBJS))
 
-.PHONY: clean program
+cleanall: clean
+	rm -f $(TARGET).elf
+	rm -f $(TARGET).bin
+	rm -f $(TARGET).dfu
+
+.PHONY: clean cleanall program

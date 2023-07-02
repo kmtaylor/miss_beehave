@@ -10,3 +10,11 @@
 	path = arduino/lib/ArduinoCore-avr
 	url = https://github.com/arduino/ArduinoCore-avr.git
 	ignore = untracked
+[submodule "arduino/lib/Arduino_Core_STM32"]
+	path = arduino/lib/Arduino_Core_STM32
+	url = https://github.com/stm32duino/Arduino_Core_STM32.git
+	ignore = untracked
+[submodule "arduino/lib/CMSIS_5"]
+	path = arduino/lib/CMSIS_5
+	url = https://github.com/ARM-software/CMSIS_5.git
+	ignore = untracked
