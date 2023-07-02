@@ -1,4 +1,4 @@
-TARGET := hello_world
+TARGET := upper
 
 TOOLCHAIN := ../lib/xpack-arm-none-eabi-gcc-12.2.1-1.2/bin
 
@@ -15,12 +15,12 @@ ARM-G++ := $(TOOLCHAIN)/arm-none-eabi-g++
 ARM-GCC := $(TOOLCHAIN)/arm-none-eabi-gcc
 ARM-OBJCOPY := $(TOOLCHAIN)/arm-none-eabi-objcopy
 
-all: hello_world.dfu
+all: $(TARGET).dfu
 
 program:
 	dfu-util -D $(TARGET).dfu
 
-OBJS := hello_world.o
+OBJS := upper.o
 OBJS += ../lib/modbusino/Modbusino.o
 
 CFLAGS := -DARDUINO_ARCH_STM32
