@@ -1,0 +1,4 @@
+0   PASS
+1   SL
+2   SR
+3   SWP

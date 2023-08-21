@@ -1,0 +1,100 @@
+[*]
+[*] GTKWave Analyzer v3.3.68 (w)1999-2016 BSI
+[*] Sun Aug 21 03:05:35 2016
+[*]
+[dumpfile] "/home/kmtaylor/Cube_Raster.cylib/cube_raster/sim/cube_raster_tb.vcd"
+[dumpfile_mtime] "Sun Aug 21 03:02:19 2016"
+[dumpfile_size] 34963910
+[savefile] "/home/kmtaylor/Cube_Raster.cylib/cube_raster/sim/cube_raster_tb.gtkw"
+[timestart] 0
+[size] 1680 890
+[pos] -1 -1
+*-13.000000 11695 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] cube_raster_tb.
+[treeopen] cube_raster_tb.cube_raster.
+[treeopen] cube_raster_tb.cube_raster.cube_control.offset_count.U0.
+[treeopen] cube_raster_tb.cube_raster.slave_shifter[0].
+[treeopen] cube_raster_tb.cube_raster.slave_shifter[0].cube_shifter.
+[treeopen] cube_raster_tb.cube_raster.slave_shifter[0].cube_shifter.dshifter.
+[sst_width] 266
+[signals_width] 258
+[sst_expanded] 1
+[sst_vpaned_height] 288
+@28
+cube_raster_tb.clk
+cube_raster_tb.cube_raster.cube_control.finished
+cube_raster_tb.reset
+cube_raster_tb.cube_raster.cube_control.last_bit
+cube_raster_tb.drq
+@2022
+^1 states.txt
+cube_raster_tb.cube_raster.cube_control.state[4:0]
+@28
+cube_raster_tb.cube_raster.cube_control.pwm_tc
+[color] 1
+cube_raster_tb.cube_raster.cube_control.offset_tc
+@22
+cube_raster_tb.cube_raster.cube_control.bit_count[2:0]
+cube_raster_tb.cube_raster.cube_control.byte_count[1:0]
+@28
+[color] 1
+cube_raster_tb.cube_raster.cube_control.start
+cube_raster_tb.cube_raster.cube_control.loop_load_inh
+[color] 6
+cube_raster_tb.cube_raster.cube_control.loop_load
+cube_raster_tb.cube_raster.cube_control.fifo0_load
+cube_raster_tb.cube_raster.cube_control.offset_state
+@200
+-
+-
+-Shifter
+@c02022
+^2 dp_inst.txt
+cube_raster_tb.cube_raster.slave_shifter[0].cube_shifter.dp_addr[2:0]
+@28
+(0)cube_raster_tb.cube_raster.slave_shifter[0].cube_shifter.dp_addr[2:0]
+(1)cube_raster_tb.cube_raster.slave_shifter[0].cube_shifter.dp_addr[2:0]
+(2)cube_raster_tb.cube_raster.slave_shifter[0].cube_shifter.dp_addr[2:0]
+@1401200
+-group_end
+@22
+[color] 5
+cube_raster_tb.cube_raster.slave_shifter[0].cube_shifter.dshifter.U0.reg_a0[7:0]
+[color] 5
+cube_raster_tb.cube_raster.slave_shifter[0].cube_shifter.dshifter.U1.reg_a0[7:0]
+cube_raster_tb.cube_raster.slave_shifter[0].cube_shifter.dshifter.U0.reg_a1[7:0]
+cube_raster_tb.cube_raster.slave_shifter[0].cube_shifter.dshifter.U1.reg_a1[7:0]
+@28
+cube_raster_tb.cube_raster.slave_shifter[0].cube_shifter.dshifter_latch_add
+cube_raster_tb.cube_raster.slave_shifter[0].cube_shifter.dshifter_clear_add
+cube_raster_tb.cube_raster.slave_shifter[0].cube_shifter.do_add_i
+[color] 6
+cube_raster_tb.cube_raster.slave_shifter[0].cube_shifter.do_add
+cube_raster_tb.cube_raster.slave_shifter[0].cube_shifter.dshifter_data_en
+cube_raster_tb.cube_raster.slave_shifter[0].cube_shifter.dshifter_data_zero
+cube_raster_tb.cube_raster.slave_shifter[0].cube_shifter.dshifter_last_bit
+cube_raster_tb.cube_raster.slave_shifter[0].cube_shifter.dshifter_fifo0_load
+cube_raster_tb.cube_raster.slave_shifter[0].cube_shifter.dshifter_fifo0_en_load
+cube_raster_tb.cube_raster.slave_shifter[0].cube_shifter.dshifter.U0.FIFO0.fifo_rd_enable
+@29
+cube_raster_tb.cube_raster.slave_shifter[0].cube_shifter.sout
+@200
+-
+-
+-Offset
+@2022
+^3 dec_inst.txt
+cube_raster_tb.cube_raster.cube_control.offset_count.U0.cs_addr[2:0]
+@22
+cube_raster_tb.cube_raster.cube_control.offset_count.U0.reg_a0[7:0]
+@200
+-
+-
+-DMA Count
+@22
+cube_raster_tb.cube_raster.cube_control.dma_count.U0.reg_a0[7:0]
+@28
+cube_raster_tb.cube_raster.cube_control.dma_tc_i
+cube_raster_tb.cube_raster.cube_control.dma_tc
+[pattern_trace] 1
+[pattern_trace] 0

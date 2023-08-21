@@ -1,0 +1,8 @@
+0   NOOP
+1   INC
+2   DEC
+3   ADD
+4   SUB
+5   XOR
+6   AND
+7   OR

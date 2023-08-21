@@ -1,0 +1,2 @@
+0   CFGA
+1   CFGB

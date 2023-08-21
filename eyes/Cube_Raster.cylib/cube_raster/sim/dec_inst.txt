@@ -1,0 +1,4 @@
+0   DEC_DEC
+1   DEC_LOAD_F0
+2   DEC_INH
+3   DEC_LOAD_D0
