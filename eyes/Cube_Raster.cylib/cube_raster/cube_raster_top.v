@@ -1,10 +1,11 @@
 `include "cube_shifter.v"
 `include "cube_control.v"
 
-`define NUM_SHIFTERS 7
+`define NUM_SHIFTERS 10
 
 module cube_raster (
 	output wire drq,
+	output wire drq_d,
 	output wire finished,
 	output wire [`NUM_SHIFTERS-1:0] sout,
 	input  wire clk,
@@ -49,6 +50,7 @@ module cube_raster (
         .clk(clk),
         .reset(reset),
 	.drq(drq),
+	.drq_d(drq_d),
 	.finished(finished),
 
 	.dp_addr(dp_addr),

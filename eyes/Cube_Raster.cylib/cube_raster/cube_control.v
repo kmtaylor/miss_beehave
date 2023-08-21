@@ -3,7 +3,8 @@
 module cube_control (
 	input  wire clk,
 	input  wire reset,
-	output wire drq,
+	output reg  drq,
+	output reg  drq_d,
 	output reg  finished,
 
 	output reg  [2:0] dp_addr,
@@ -31,6 +32,7 @@ module cube_control (
     reg dma_req;
     reg data_stop, data_start;
     reg dma_tc;
+    reg finished_i;
     
     wire offset_fifo_empty;
     wire zero_cmp;
@@ -45,6 +47,13 @@ module cube_control (
     wire dma_tc_i;
     wire enable;
     wire ack_finished;
+    wire drq_i;
+
+    always @(posedge clk) begin : sync_output_proc
+	finished    <= finished_i;
+	drq	    <= drq_i;
+	drq_d	    <= drq;
+    end /* sync_output_proc */
 
     assign zero_bit	= !zero_cmp;
     assign one_bit	= !one_cmp;
@@ -53,7 +62,7 @@ module cube_control (
 
     assign fifo0_en_load    = fifo0_cpu | dma_continue;
     assign dma_continue	    = offset_tc & !loop_load & data_en & !dma_tc;
-    assign drq		    = dma_req | dma_continue;
+    assign drq_i	    = dma_req | dma_continue;
 
     localparam
 	DEC_DEC		    = 0,
@@ -230,7 +239,7 @@ module cube_control (
 	data_start	<= 0;
 	dma_req		<= 0;
 	data_zero_latch	<= 0;
-	finished	<= 0;
+	finished_i	<= 0;
 	offset_load	<= 0;
 
 	case (state)
@@ -324,7 +333,7 @@ module cube_control (
 		dp_addr <= DP_FETCH_TMP;
 
 	    STATE_FINISHED: begin
-		finished <= 1;
+		finished_i <= 1;
 		if (pwm_tc & !last_bit)
 		    data_stop <= 1;
 	    end
@@ -416,6 +425,55 @@ module cube_control (
         `SC_WRK16CAT_DSBL /*CFG17-16: */
     };
 
+    parameter dp_dec_config_high = {
+        `CS_ALU_OP__DEC, `CS_SRCA_A0, `CS_SRCB_D0,
+        `CS_SHFT_OP_PASS, `CS_A0_SRC__ALU, `CS_A1_SRC_NONE,
+        `CS_FEEDBACK_DSBL, `CS_CI_SEL_CFGA, `CS_SI_SEL_CFGA,
+        `CS_CMP_SEL_CFGA, /*CFGRAM0: Decrement*/
+        `CS_ALU_OP_PASS, `CS_SRCA_A0, `CS_SRCB_D0,
+        `CS_SHFT_OP_PASS, `CS_A0_SRC___F0, `CS_A1_SRC_NONE,
+        `CS_FEEDBACK_DSBL, `CS_CI_SEL_CFGA, `CS_SI_SEL_CFGA,
+        `CS_CMP_SEL_CFGA, /*CFGRAM1: Load F0*/
+        `CS_ALU_OP_PASS, `CS_SRCA_A0, `CS_SRCB_D0,
+        `CS_SHFT_OP_PASS, `CS_A0_SRC_NONE, `CS_A1_SRC_NONE,
+        `CS_FEEDBACK_DSBL, `CS_CI_SEL_CFGA, `CS_SI_SEL_CFGA,
+        `CS_CMP_SEL_CFGA, /*CFGRAM2: Inhibit*/
+        `CS_ALU_OP_PASS, `CS_SRCA_A0, `CS_SRCB_D0,
+        `CS_SHFT_OP_PASS, `CS_A0_SRC___D0, `CS_A1_SRC_NONE,
+        `CS_FEEDBACK_DSBL, `CS_CI_SEL_CFGA, `CS_SI_SEL_CFGA,
+        `CS_CMP_SEL_CFGA, /*CFGRAM3: Load D0*/
+        `CS_ALU_OP_PASS, `CS_SRCA_A0, `CS_SRCB_D0,
+        `CS_SHFT_OP_PASS, `CS_A0_SRC_NONE, `CS_A1_SRC_NONE,
+        `CS_FEEDBACK_DSBL, `CS_CI_SEL_CFGA, `CS_SI_SEL_CFGA,
+        `CS_CMP_SEL_CFGA, /*CFGRAM4: */
+        `CS_ALU_OP_PASS, `CS_SRCA_A0, `CS_SRCB_D0,
+        `CS_SHFT_OP_PASS, `CS_A0_SRC_NONE, `CS_A1_SRC_NONE,
+        `CS_FEEDBACK_DSBL, `CS_CI_SEL_CFGA, `CS_SI_SEL_CFGA,
+        `CS_CMP_SEL_CFGA, /*CFGRAM5: */
+        `CS_ALU_OP_PASS, `CS_SRCA_A0, `CS_SRCB_D0,
+        `CS_SHFT_OP_PASS, `CS_A0_SRC_NONE, `CS_A1_SRC_NONE,
+        `CS_FEEDBACK_DSBL, `CS_CI_SEL_CFGA, `CS_SI_SEL_CFGA,
+        `CS_CMP_SEL_CFGA, /*CFGRAM6: */
+        `CS_ALU_OP_PASS, `CS_SRCA_A0, `CS_SRCB_D0,
+        `CS_SHFT_OP_PASS, `CS_A0_SRC_NONE, `CS_A1_SRC_NONE,
+        `CS_FEEDBACK_DSBL, `CS_CI_SEL_CFGA, `CS_SI_SEL_CFGA,
+        `CS_CMP_SEL_CFGA, /*CFGRAM7: */ 
+         8'hFF, 8'h00, /*CFG9: */
+         8'hFF, 8'hFF, /*CFG11-10: */
+        `SC_CMPB_A0_D1, `SC_CMPA_A0_D1, `SC_CI_B_ARITH,
+        `SC_CI_A_CHAIN, `SC_C1_MASK_DSBL, `SC_C0_MASK_DSBL,
+        `SC_A_MASK_DSBL, `SC_DEF_SI_0, `SC_SI_B_DEFSI,
+        `SC_SI_A_DEFSI, /*CFG13-12: */
+        `SC_A0_SRC_ACC, `SC_SHIFT_SL, 1'h0,
+         1'h0, `SC_FIFO1_BUS, `SC_FIFO0_BUS,
+        `SC_MSB_DSBL, `SC_MSB_BIT0, `SC_MSB_NOCHN,
+        `SC_FB_NOCHN, `SC_CMP1_NOCHN,
+        `SC_CMP0_CHNED, /*CFG15-14: */
+         10'h00, `SC_FIFO_CLK__DP,`SC_FIFO_CAP_AX,
+        `SC_FIFO_LEVEL,`SC_FIFO_ASYNC,`SC_EXTCRC_DSBL,
+        `SC_WRK16CAT_DSBL /*CFG17-16: */
+    };
+
     cy_psoc3_dp8 #(.cy_dpconfig_a(dp_dec_config)) pwm8 (
         /*  input                   */  .reset(reset),
         /*  input                   */  .clk(clk),
@@ -472,7 +530,8 @@ module cube_control (
         /*  output                  */  .f1_blk_stat()
     );
 
-    cy_psoc3_dp8 #(.cy_dpconfig_a(dp_dec_config)) dma_count (
+    cy_psoc3_dp16 #(.cy_dpconfig_a(dp_dec_config),
+		    .cy_dpconfig_b(dp_dec_config_high)) dma_count (
         /*  input                   */  .reset(reset),
         /*  input                   */  .clk(clk),
         /*  input	            */  .cs_addr({1'b0, dma_count_ctrl}),
@@ -484,7 +543,7 @@ module cube_control (
         /*  input                   */  .d1_load(1'b0),
         /*  output                  */  .ce0(),
         /*  output                  */  .cl0(),
-        /*  output                  */  .z0(dma_tc_i),
+        /*  output                  */  .z0({dma_tc_i, nc_0}),
         /*  output                  */  .ff0(),
         /*  output                  */  .ce1(),
         /*  output                  */  .cl1(),

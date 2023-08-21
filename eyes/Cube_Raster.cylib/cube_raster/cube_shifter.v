@@ -1,7 +1,7 @@
 `include "cypress.v"
 
 module cube_shifter (
-	output wire sout,
+	output reg  sout,
 	input  wire clk,
 	input  wire reset,
 
@@ -22,6 +22,7 @@ module cube_shifter (
     wire do_add_i;
     wire data_out;
     wire shift_data;
+    wire sout_i;
     
     reg [1:0] shift_out;
     reg do_add;
@@ -41,7 +42,7 @@ module cube_shifter (
     assign shift_data = dshifter_last_bit ? shift_out[1] : shift_out[0];
     assign data_out = dshifter_data_zero ? dshifter_zero_bit : 
                             shift_data ? dshifter_one_bit : dshifter_zero_bit;
-    assign sout	    = dshifter_data_en ? data_out : 0;
+    assign sout_i   = dshifter_data_en ? data_out : 0;
 
     localparam DP_NOP = 0;
 
@@ -57,6 +58,7 @@ module cube_shifter (
 	dshifter_last_bit	<= last_bit_i;
 	dshifter_one_bit	<= one_bit_i;
 	dshifter_zero_bit	<= zero_bit_i;
+	sout			<= sout_i;
     end /* sync_input_proc */
 
     always @(posedge clk) begin : sync_addr_proc

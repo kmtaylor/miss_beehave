@@ -1,4 +1,4 @@
-#define `$INSTANCE_NAME`_NUM_OUTPUTS 7
+#define `$INSTANCE_NAME`_NUM_OUTPUTS 10
 
 /* Data DMA Addresses */
 #define `$INSTANCE_NAME`_RGB_DATA_0 \
@@ -15,6 +15,12 @@
 	    `$INSTANCE_NAME`_cube_raster_slave_shifter_5__cube_shifter_dshifter_u0__F0_REG
 #define `$INSTANCE_NAME`_RGB_DATA_6 \
 	    `$INSTANCE_NAME`_cube_raster_slave_shifter_6__cube_shifter_dshifter_u0__F0_REG
+#define `$INSTANCE_NAME`_RGB_DATA_7 \
+	    `$INSTANCE_NAME`_cube_raster_slave_shifter_7__cube_shifter_dshifter_u0__F0_REG
+#define `$INSTANCE_NAME`_RGB_DATA_8 \
+	    `$INSTANCE_NAME`_cube_raster_slave_shifter_8__cube_shifter_dshifter_u0__F0_REG
+#define `$INSTANCE_NAME`_RGB_DATA_9 \
+	    `$INSTANCE_NAME`_cube_raster_slave_shifter_9__cube_shifter_dshifter_u0__F0_REG
 
 #define `$INSTANCE_NAME`_DIM_VAL_0 \
 	    `$INSTANCE_NAME`_cube_raster_slave_shifter_0__cube_shifter_dshifter_u1__D0_REG
@@ -30,6 +36,12 @@
 	    `$INSTANCE_NAME`_cube_raster_slave_shifter_5__cube_shifter_dshifter_u1__D0_REG
 #define `$INSTANCE_NAME`_DIM_VAL_6 \
 	    `$INSTANCE_NAME`_cube_raster_slave_shifter_6__cube_shifter_dshifter_u1__D0_REG
+#define `$INSTANCE_NAME`_DIM_VAL_7 \
+	    `$INSTANCE_NAME`_cube_raster_slave_shifter_7__cube_shifter_dshifter_u1__D0_REG
+#define `$INSTANCE_NAME`_DIM_VAL_8 \
+	    `$INSTANCE_NAME`_cube_raster_slave_shifter_8__cube_shifter_dshifter_u1__D0_REG
+#define `$INSTANCE_NAME`_DIM_VAL_9 \
+	    `$INSTANCE_NAME`_cube_raster_slave_shifter_9__cube_shifter_dshifter_u1__D0_REG
 
 /* Offset/Count Registers */
 #define `$INSTANCE_NAME`_FIFO_LOOP \
@@ -42,7 +54,7 @@
 
 /* DMA Registers */
 #define `$INSTANCE_NAME`_DMA_COUNT \
-	    `$INSTANCE_NAME`_cube_raster_cube_control_dma_count_u0__D0_REG
+	    `$INSTANCE_NAME`_cube_raster_cube_control_dma_count_u0__16BIT_D0_REG
 
 /* PWM Registers */
 #define `$INSTANCE_NAME`_PWM_DISABLE_FIFO \
@@ -61,9 +73,9 @@
 #define `$INSTANCE_NAME`_ENABLE	    (1 << 0)
 #define `$INSTANCE_NAME`_RESTART    (1 << 1)
 
-extern void `$INSTANCE_NAME`_SetupDMA(uint8 chain_length, uint8 **rgb,
+extern void `$INSTANCE_NAME`_SetupDMA(uint16 chain_length, uint8 **rgb,
 	uint8 *offset, uint8 *count);
-extern void `$INSTANCE_NAME`_SetupIRQ(uint8 chain_length, uint8 **rgb,
+extern void `$INSTANCE_NAME`_SetupIRQ(uint16 chain_length, uint8 **rgb,
 	uint8 *offset, uint8 *count);
 
 extern void `$INSTANCE_NAME`_UpdateDMA(void);
