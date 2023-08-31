@@ -1,13 +1,11 @@
 #include <project.h>
 
-static int usb_up;
+#include "uvc.h"
 
-#define SIZE_J 7
-#define SIZE_K 8
-#define CHAIN_LENGTH (SIZE_J * SIZE_K)
+#define CHAIN_LENGTH 256
 static volatile uint8_t update_pending_range = 0;
 static volatile uint8_t update_pending_brightness = 0;
-static uint8_t brightness = 0xff;
+static uint16_t brightness = 0;
 static uint8_t rgb_data_0[CHAIN_LENGTH*3];
 static uint8_t rgb_data_1[CHAIN_LENGTH*3];
 static uint8_t rgb_data_2[CHAIN_LENGTH*3];
@@ -15,34 +13,19 @@ static uint8_t rgb_data_3[CHAIN_LENGTH*3];
 static uint8_t rgb_data_4[CHAIN_LENGTH*3];
 static uint8_t rgb_data_5[CHAIN_LENGTH*3];
 static uint8_t rgb_data_6[CHAIN_LENGTH*3];
+static uint8_t rgb_data_7[CHAIN_LENGTH*3];
+static uint8_t rgb_data_8[CHAIN_LENGTH*3];
+static uint8_t rgb_data_9[CHAIN_LENGTH*3];
 
-static uint8_t offsets[CHAIN_LENGTH] = {
-	1, 2, 2, 2, 2, 2, 2, 2,
-	3, 2, 2, 2, 2, 2, 2, 2,
-	3, 2, 2, 2, 2, 2, 2, 2,
-	3, 2, 2, 2, 2, 2, 2, 2,
-	3, 2, 2, 2, 2, 2, 2, 2,
-	3, 2, 2, 2, 2, 2, 2, 2,
-	3, 2, 2, 2, 2, 2, 2, 2,
-};
-
-static uint8_t counts[CHAIN_LENGTH] = {
-	1, 1, 1, 1, 1, 1, 1, 1,
-	1, 1, 1, 1, 1, 1, 1, 1,
-	1, 1, 1, 1, 1, 1, 1, 1,
-	1, 1, 1, 1, 1, 1, 1, 1,
-	1, 1, 1, 1, 1, 1, 1, 1,
-	1, 1, 1, 1, 1, 1, 1, 1,
-	1, 1, 1, 1, 1, 1, 1, 1,
-};
+static uint8_t offsets[CHAIN_LENGTH] = { 0 };
+static uint8_t counts[CHAIN_LENGTH] = { [ 0 ... CHAIN_LENGTH-1] = 1 };
 
 static uint8_t *rgb_data[] = {
-	rgb_data_0, rgb_data_1, rgb_data_2, rgb_data_3,
-	rgb_data_4, rgb_data_5, rgb_data_6 };
+        rgb_data_0, rgb_data_1, rgb_data_2, rgb_data_3, rgb_data_4,
+        rgb_data_5, rgb_data_6, rgb_data_7, rgb_data_8, rgb_data_9 };
 
-
-static void test_pattern(uint8_t length) {
-    uint8_t i, j, bytes;
+static void test_pattern(uint16_t length) {
+    uint16_t i, j, bytes;
     uint8_t pattern[] = {
         0x00, 0xff, 0x00, /* Red */
         0xff, 0x00, 0x00, /* Blue */
@@ -61,40 +44,51 @@ static void test_pattern(uint8_t length) {
     }
 }
 
+static int one_pixel(void) {
+    static uint16_t pixel;
+    uint16_t i, j, bytes;
+    uint8_t pattern[] = {
+        0x00, 0x00, 0x00, /* Black */
+    };
+    uint8_t colour[] = {
+        0x00, 0xff, 0x00, /* Red */
+    };
+
+
+    for (i = 0; i < LED_RASTER_NUM_OUTPUTS; i++) {
+        j = 0;
+        while (j < CHAIN_LENGTH*3) {
+            bytes = (CHAIN_LENGTH*3 - j);
+            if (bytes > sizeof(pattern)) bytes = sizeof(pattern);
+            memcpy(&rgb_data[i][j], pattern, bytes);
+            if ((i*CHAIN_LENGTH + j/3) == pixel) {
+                memcpy(&rgb_data[i][j], colour, 3);
+            }
+            j += bytes;
+        }
+    }
+    pixel++;
+    //pixel = 511;
+    if (pixel == CHAIN_LENGTH*10) pixel = 0;
+    return pixel;
+}
+
 CY_ISR(raster_finished) {
     if (update_pending_range) {
-	//update_pixel_range();
-	update_pending_range = 0;
+        //update_pixel_range();
+        update_pending_range = 0;
     }
     if (update_pending_brightness) {
-	LED_RASTER_SetBrightness(brightness);
-	update_pending_brightness = 0;
+        LED_RASTER_SetBrightness(brightness);
+        update_pending_brightness = 0;
     }
     LED_TIMER_Enable();
-    //LED_WATCHDOG_RESET_Write(1);
 }
 
 CY_ISR(raster_refresh) {
     LED_RASTER_UpdateDMA();
     LED_TIMER_Stop();
     LED_TIMER_RESET_Write(1);
-}
-
-static void usb_poll(void) {
-    if (USBFS_GetConfiguration()) {
-        if (!usb_up) USBFS_CDC_Init();
-        usb_up = 1;
-    } else {
-        usb_up = 0;
-    }
-}
-
-void print(char *string) {
-    static char print_string[64];
-    if (!usb_up) return;
-    strcpy(print_string, string);
-    while (!USBFS_CDCIsReady()) {}
-    USBFS_PutData((uint8_t *)print_string, strlen(string));
 }
 
 int main(void) {
@@ -111,12 +105,15 @@ int main(void) {
     CyGlobalIntEnable;
 
     for(;;) {
-        if (i == 1000000) {
-            print("Loop running\n");
+        if (i == 50000) {
+            update_pending_brightness = 1;
+            brightness = 10;
+            if (brightness == 80) brightness = 0;
+
             i = 0;
         }
 
-        usb_poll();
+        //uvc_loop();
         i++;
     }
 }

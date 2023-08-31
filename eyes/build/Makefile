@@ -9,7 +9,7 @@ CONFIG_DEPS := $(CYPRESS_DIR)/$(TARGET).cydwr \
 
 PROJECT_FILE  := $(CYPRESS_DIR)/$(TARGET).cyprj
 
-SRC := main.c
+SRC := main.c USBFS_descr.c uvc.c
 OBJ := $(SRC:.c=.o)
 
 CC := arm-psoc-eabi-gcc
@@ -25,6 +25,7 @@ INCLUDES  := -I config -I fix_case -I $(TOP_SRCDIR)
 CFLAGS := -mcpu=cortex-m3 -mthumb -Wall -std=gnu11 -g
 CFLAGS += -ffunction-sections -ffat-lto-objects -O3 -flto
 CFLAGS += -D DEBUG -D CY_CORE_ID=0 
+CFLAGS += -D USBFS_DISPATCH_CLASS_RQST_CALLBACK
 
 ASMFLAGS := -mcpu=cortex-m3 -mthumb -W
 
@@ -40,7 +41,7 @@ WARP_ARGS := -yv2 -q10 -ygs -o2 -v3 -.fftcfgtype=LE
 LDFLAGS := -mcpu=cortex-m3 -mthumb -L config -T config/cm3gcc.ld
 LDFLAGS += -Wl,-Map,$(TARGET).map -specs=nano.specs -flto
 LDFLAGS += -Wl,--gc-sections -ffunction-sections -ffat-lto-objects -O3 -g
-LDFLAGS += -u _printf_float
+#LDFLAGS += -u _printf_float
 #LDFLAGS += -u _scanf_float
 
 export
@@ -67,11 +68,9 @@ config/cyfitter_cfg.c: $(CONFIG_DEPS)
 	mkdir -p config
 	cd config ; $(CYDSFIT) -p $(abspath $(PROJECT_FILE)) \
 	    $(DSFIT_ARGS) -- $(WARP_ARGS) 2>/dev/null
+	rm config/USBFS_descr.c 
 
-%.o: $(TOP_SRCDIR)/%.c $(STMBL_TBL) lib/$(TARGET).a
-	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
-
-main.o: $(TOP_SRCDIR)/main.c $(STMBL_TBL) $(SETUPS) lib/$(TARGET).a
+%.o: $(TOP_SRCDIR)/%.c lib/$(TARGET).a
 	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
 
 cleanall: clean
