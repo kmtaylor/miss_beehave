@@ -1,0 +1,8 @@
+*.o
+*.swp
+*.elf
+*.hex
+*.map
+*.cyacd
+build/config
+build/lib

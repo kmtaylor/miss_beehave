@@ -140,7 +140,7 @@ const uint8 CYCODE USBFS_DEVICE0_CONFIGURATION0_DESCR[] = {
                                               0x4fu, 0x52u, 0xceu, 0x11u,
                                               0x9fu, 0x53u, 0x00u, 0x20u,
                                               0xafu, 0x0bu, 0xa7u, 0x70u,
-/*  Bits per pixel                         */ 0x08u,
+/*  Bits per pixel                         */ 0x18u,
 /*  Default frame index                    */ 0x00u,
 /*  Aspect ratio X                         */ 0x00u,
 /*  Aspect ratio Y                         */ 0x00u,
@@ -159,10 +159,10 @@ const uint8 CYCODE USBFS_DEVICE0_CONFIGURATION0_DESCR[] = {
 /*  Height                                 */ 0x40u, 0x00u,
 /*  MinBitRate                             */ 0x00u, 0x00u, 0x00u, 0x00u,
 /*  MaxBitRate                             */ 0x00u, 0x00u, 0x00u, 0x00u,
-/*  Default frame interval                 */ 0x0bu, 0x8bu, 0x02u, 0x00u,
+/*  Default frame interval                 */ 0x0au, 0x8bu, 0x02u, 0x00u,
 /*  Frame interval type                    */ 0x01u,
 /*  Bytes per line                         */ 0x00u, 0x00u, 0x00u, 0x00u,
-/*  Frame rate                             */ 0x0bu, 0x8bu, 0x02u, 0x00u,
+/*  Frame rate                             */ 0x0au, 0x8bu, 0x02u, 0x00u,
 /*********************************************************************
 * Endpoint Descriptor
 *********************************************************************/
