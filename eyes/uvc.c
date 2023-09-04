@@ -20,15 +20,17 @@ enum packet_state {
 };
 
 static uint8_t ep_dma_buf[64];
-static uint8_t ep_work_buf[64];
+static uint8_t ep_work_buf[64 + 2];
 static uint16_t *pixel_map;
 
-static int uvc_map_address(int x, int y) {
-    int quant_x, quant_y;
+static int uvc_map_address(int idx) {
+    int x, y, quant_x, quant_y;
     int map_addr, map_val;
     int chain_idx, chain_quad, chain_type;
     int mem_addr;
 
+    x = idx % 80;
+    y = idx / 80;
     quant_x = x / 8;
     quant_y = y / 8;
 
@@ -76,26 +78,33 @@ static int uvc_map_address(int x, int y) {
 }
 
 static void uvc_process_packet(uint8_t *buf, int first, int last) {
-    int pixel, sum, addr;
-    int byte = 0;
-    int bytes = 64;
+    static int rem, x;
+    int i, addr, len = 64;
+    uint8_t *ep_shift = ep_work_buf + 2;
 
     if (first) {
-        bytes = 62;
-        byte = 2;
+        ep_shift += 2; // Ignore header
+        len = 62;
+        rem = 0;
+        x = 0;
     } else if (last) {
-        bytes = 2;
+        len = 2;
     }
 
-    if (!first) return;
+    ep_shift -= rem;
 
-    for (pixel = 0; byte < bytes; byte += 3, pixel += 1) {
-        if ((addr = uvc_map_address(pixel, 0)) >= 0) {
-            buf[addr + 0] = ep_work_buf[byte + 0];
-            buf[addr + 1] = ep_work_buf[byte + 1];
-            buf[addr + 2] = ep_work_buf[byte + 2];
+    for (i = 0; i < len - 2 + rem; i += 3) {
+        if ((addr = uvc_map_address(x++)) >= 0) {
+            buf[addr + 0] = ep_shift[i + 0];
+            buf[addr + 1] = ep_shift[i + 1];
+            buf[addr + 2] = ep_shift[i + 2];
         }
     }
+
+    rem = (rem + len) % 3;
+
+    if (rem > 1) ep_work_buf[0] = ep_shift[i++];
+    if (rem > 0) ep_work_buf[1] = ep_shift[i++];
 }
 
 int uvc_loop(uint8_t *buf) {
@@ -118,7 +127,7 @@ int uvc_loop(uint8_t *buf) {
 
     if (USBFS_GetEPState(USBFS_EP1) == USBFS_OUT_BUFFER_FULL) {
         count = USBFS_GetEPCount(USBFS_EP1);
-        memcpy(ep_work_buf, ep_dma_buf, count);
+        memcpy(ep_work_buf + 2, ep_dma_buf, count);
         USBFS_EnableOutEP(USBFS_EP1);
         if (count) {
             uvc_process_packet(buf, prev_count == 2, count == 2);
