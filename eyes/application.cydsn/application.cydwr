@@ -322,6 +322,7 @@
       <Data key="f5febab3-71a1-4f62-9aaa-1b473a58b9e1" value="DIR_P_4" />
       <Data key="f9e515ec-f3df-470a-9a28-caea0e7d7e12" value="IN_1" />
       <Data key="f71ad3a6-591d-495b-860d-7fca4e33c938" value="DIR_P_2" />
+      <Data key="fc4920bb-ace9-4d47-ba1d-9f73f9bbd5fb" value="STATUS_LED" />
     </Group>
   </Group>
   <Group key="EEPROM">
@@ -3709,6 +3710,11 @@
     <Group key="f71ad3a6-591d-495b-860d-7fca4e33c938">
       <Group key="0">
         <Data key="Port Format" value="0,7" />
+      </Group>
+    </Group>
+    <Group key="fc4920bb-ace9-4d47-ba1d-9f73f9bbd5fb">
+      <Group key="0">
+        <Data key="Port Format" value="2,1" />
       </Group>
     </Group>
     <Group key="UnAssigned Pins" />

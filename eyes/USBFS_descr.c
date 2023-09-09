@@ -177,7 +177,7 @@ const uint8 CYCODE USBFS_DEVICE0_CONFIGURATION0_DESCR[] = {
 /*********************************************************************
 * String Descriptor Table
 *********************************************************************/
-const uint8 CYCODE USBFS_STRING_DESCRIPTORS[109u] = {
+const uint8 CYCODE USBFS_STRING_DESCRIPTORS[71u] = {
 /*********************************************************************
 * Language ID Descriptor
 *********************************************************************/
@@ -195,21 +195,12 @@ const uint8 CYCODE USBFS_STRING_DESCRIPTORS[109u] = {
  (uint8)'d', 0u,(uint8)'u', 0u,(uint8)'c', 0u,(uint8)'t', 0u,(uint8)'o', 0u,
  (uint8)'r', 0u,
 /*********************************************************************
-* String Descriptor: "Video control"
+* String Descriptor: "LED Raster"
 *********************************************************************/
-/* Descriptor Length                       */ 0x1Cu,
+/* Descriptor Length                       */ 0x16u,
 /* DescriptorType: STRING                  */ 0x03u,
- (uint8)'V', 0u,(uint8)'i', 0u,(uint8)'d', 0u,(uint8)'e', 0u,(uint8)'o', 0u,
- (uint8)' ', 0u,(uint8)'c', 0u,(uint8)'o', 0u,(uint8)'n', 0u,(uint8)'t', 0u,
- (uint8)'r', 0u,(uint8)'o', 0u,(uint8)'l', 0u,
-/*********************************************************************
-* String Descriptor: "Video streaming"
-*********************************************************************/
-/* Descriptor Length                       */ 0x20u,
-/* DescriptorType: STRING                  */ 0x03u,
- (uint8)'V', 0u,(uint8)'i', 0u,(uint8)'d', 0u,(uint8)'e', 0u,(uint8)'o', 0u,
- (uint8)' ', 0u,(uint8)'s', 0u,(uint8)'t', 0u,(uint8)'r', 0u,(uint8)'e', 0u,
- (uint8)'a', 0u,(uint8)'m', 0u,(uint8)'i', 0u,(uint8)'n', 0u,(uint8)'g', 0u,
+ (uint8)'L', 0u,(uint8)'E', 0u,(uint8)'D', 0u,(uint8)' ', 0u,(uint8)'R', 0u,
+ (uint8)'a', 0u,(uint8)'s', 0u,(uint8)'t', 0u,(uint8)'e', 0u,(uint8)'r', 0u,
 /*********************************************************************/
 /* Marks the end of the list.              */ 0x00u};
 /*********************************************************************/

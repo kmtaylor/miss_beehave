@@ -99,7 +99,7 @@ CY_ISR(raster_finished) {
 }
 
 CY_ISR(raster_refresh) {
-    LED_RASTER_UpdateDMA();
+    LED_RASTER_UpdateDMA(rgb_data_chain);
     LED_TIMER_Stop();
     LED_TIMER_RESET_Write(1);
 }
@@ -114,7 +114,8 @@ int main(void) {
 
     //test_pattern(CHAIN_LENGTH);
     //one_pixel(512*9);
-    LED_RASTER_SetupDMA(CHAIN_LENGTH, rgb_data_chain, offsets, counts);
+    LED_RASTER_SetupDMA(CHAIN_LENGTH, offsets, counts);
+    LED_RASTER_UpdateDMA(rgb_data_chain);
 
     CyGlobalIntEnable;
 

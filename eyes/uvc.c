@@ -95,9 +95,9 @@ static void uvc_process_packet(uint8_t *buf, int first, int last) {
 
     for (i = 0; i < len - 2 + rem; i += 3) {
         if ((addr = uvc_map_address(x++)) >= 0) {
-            buf[addr + 0] = ep_shift[i + 0];
-            buf[addr + 1] = ep_shift[i + 1];
-            buf[addr + 2] = ep_shift[i + 2];
+            buf[addr + 0] = ep_shift[i + 1];
+            buf[addr + 1] = ep_shift[i + 2];
+            buf[addr + 2] = ep_shift[i + 0];
         }
     }
 
