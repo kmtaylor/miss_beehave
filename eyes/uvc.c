@@ -1,24 +1,6 @@
 #include <project.h>
 #include <stdbool.h>
 
-/* Packets get written into dedicated USB buffer by USB peripheral. When
- * a packet is ready, an interrupt fires which can be checked with
- * USBFS_GetEPState. Can then read the number of bytes with USBFS_GetEPCount.
- *
- * Data must be read byte-by-byte. So use that opportunity to increment sum
- * for power regulation. Create a local version of USBFS_ReadOutEP for that.
- *
- * Everything can just run from the main loop. Interrupts are just used to
- * acknolwedge that packets are ready. Need to enable EP1 whenever
- * USBFS_GetConfiguration() is true (gets reset by bus_reset)
- */
-
-enum packet_state {
-    NO_PACKET = 0,
-    PACKET_64,
-    PACKET_2
-};
-
 static uint8_t ep_dma_buf[64];
 static uint8_t ep_work_buf[64 + 2];
 static uint16_t *pixel_map;
@@ -77,9 +59,9 @@ static int uvc_map_address(int idx) {
     return mem_addr * 3;
 }
 
-static void uvc_process_packet(uint8_t *buf, int first, int last) {
-    static int rem, x;
-    int i, addr, len = 64;
+static int uvc_process_packet(uint8_t *buf, int first, int last) {
+    static int rem, x, sum;
+    int i, addr, len = 64, byte;
     uint8_t *ep_shift = ep_work_buf + 2;
 
     if (first) {
@@ -87,6 +69,7 @@ static void uvc_process_packet(uint8_t *buf, int first, int last) {
         len = 62;
         rem = 0;
         x = 0;
+        sum = 0;
     } else if (last) {
         len = 2;
     }
@@ -95,9 +78,9 @@ static void uvc_process_packet(uint8_t *buf, int first, int last) {
 
     for (i = 0; i < len - 2 + rem; i += 3) {
         if ((addr = uvc_map_address(x++)) >= 0) {
-            buf[addr + 0] = ep_shift[i + 1];
-            buf[addr + 1] = ep_shift[i + 2];
-            buf[addr + 2] = ep_shift[i + 0];
+            byte = ep_shift[i + 1]; buf[addr + 0] = byte; sum += byte;
+            byte = ep_shift[i + 2]; buf[addr + 1] = byte; sum += byte;
+            byte = ep_shift[i + 0]; buf[addr + 2] = byte; sum += byte;
         }
     }
 
@@ -105,16 +88,19 @@ static void uvc_process_packet(uint8_t *buf, int first, int last) {
 
     if (rem > 1) ep_work_buf[0] = ep_shift[i++];
     if (rem > 0) ep_work_buf[1] = ep_shift[i++];
+
+    return sum;
 }
 
 int uvc_loop(uint8_t *buf) {
     static int uvc_up = false;
     static int prev_count = -1;
     uint16_t count;
+    int sum;
 
     if (!USBFS_GetConfiguration()) {
         uvc_up = false;
-        return 0;
+        return -1;
     }
 
     /* Setup DMA after bus reset */
@@ -122,7 +108,7 @@ int uvc_loop(uint8_t *buf) {
         USBFS_ReadOutEP(USBFS_EP1, ep_dma_buf, 64);
         USBFS_EnableOutEP(USBFS_EP1);
         uvc_up = true;
-        return 0;
+        return -1;
     }
 
     if (USBFS_GetEPState(USBFS_EP1) == USBFS_OUT_BUFFER_FULL) {
@@ -130,13 +116,13 @@ int uvc_loop(uint8_t *buf) {
         memcpy(ep_work_buf + 2, ep_dma_buf, count);
         USBFS_EnableOutEP(USBFS_EP1);
         if (count) {
-            uvc_process_packet(buf, prev_count == 2, count == 2);
+            sum = uvc_process_packet(buf, prev_count == 2, count == 2);
             prev_count = count;
         }
-        return (count == 2) ? 1 : 0;
+        return (count == 2) ? sum : -1;
     }
 
-    return 0; 
+    return -1; 
 }
 
 void uvc_init(uint16_t *map) {
