@@ -73,12 +73,12 @@
 #define `$INSTANCE_NAME`_ENABLE	    (1 << 0)
 #define `$INSTANCE_NAME`_RESTART    (1 << 1)
 
-extern void `$INSTANCE_NAME`_SetupDMA(uint16 chain_length, uint8 **rgb,
+extern void `$INSTANCE_NAME`_SetupDMA(uint16 chain_length,
 	uint8 *offset, uint8 *count);
 extern void `$INSTANCE_NAME`_SetupIRQ(uint16 chain_length, uint8 **rgb,
 	uint8 *offset, uint8 *count);
 
-extern void `$INSTANCE_NAME`_UpdateDMA(void);
+extern void `$INSTANCE_NAME`_UpdateDMA(uint8 **rgb);
 extern void `$INSTANCE_NAME`_UpdateIRQ(void);
 
 extern void `$INSTANCE_NAME`_SetBrightness(uint8 level);

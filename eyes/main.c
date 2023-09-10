@@ -1,48 +1,58 @@
 #include <project.h>
+#include <stdbool.h>
 
-static int usb_up;
+#include "uvc.h"
 
-#define SIZE_J 7
-#define SIZE_K 8
-#define CHAIN_LENGTH (SIZE_J * SIZE_K)
-static volatile uint8_t update_pending_range = 0;
-static volatile uint8_t update_pending_brightness = 0;
-static uint8_t brightness = 0xff;
-static uint8_t rgb_data_0[CHAIN_LENGTH*3];
-static uint8_t rgb_data_1[CHAIN_LENGTH*3];
-static uint8_t rgb_data_2[CHAIN_LENGTH*3];
-static uint8_t rgb_data_3[CHAIN_LENGTH*3];
-static uint8_t rgb_data_4[CHAIN_LENGTH*3];
-static uint8_t rgb_data_5[CHAIN_LENGTH*3];
-static uint8_t rgb_data_6[CHAIN_LENGTH*3];
+#define LED_BRIGHTNESS 20
 
-static uint8_t offsets[CHAIN_LENGTH] = {
-	1, 2, 2, 2, 2, 2, 2, 2,
-	3, 2, 2, 2, 2, 2, 2, 2,
-	3, 2, 2, 2, 2, 2, 2, 2,
-	3, 2, 2, 2, 2, 2, 2, 2,
-	3, 2, 2, 2, 2, 2, 2, 2,
-	3, 2, 2, 2, 2, 2, 2, 2,
-	3, 2, 2, 2, 2, 2, 2, 2,
+#define CHAIN_LENGTH 512
+static volatile int sys_tick = 0;
+static volatile int raster_busy = false;
+static uint8_t rgb_data_a[LED_RASTER_NUM_OUTPUTS*CHAIN_LENGTH*3];
+static uint8_t rgb_data_b[LED_RASTER_NUM_OUTPUTS*CHAIN_LENGTH*3];
+static uint8_t offsets[CHAIN_LENGTH] = { 0 };
+static uint8_t counts[CHAIN_LENGTH] = { [ 0 ... CHAIN_LENGTH-1] = 1 };
+static uint8_t *rgb_data_chain_a[] = {
+    rgb_data_a + 0*CHAIN_LENGTH*3,
+    rgb_data_a + 1*CHAIN_LENGTH*3,
+    rgb_data_a + 2*CHAIN_LENGTH*3,
+    rgb_data_a + 3*CHAIN_LENGTH*3,
+    rgb_data_a + 4*CHAIN_LENGTH*3,
+    rgb_data_a + 5*CHAIN_LENGTH*3,
+    rgb_data_a + 6*CHAIN_LENGTH*3,
+    rgb_data_a + 7*CHAIN_LENGTH*3,
+    rgb_data_a + 8*CHAIN_LENGTH*3,
+    rgb_data_a + 9*CHAIN_LENGTH*3,
+};
+static uint8_t *rgb_data_chain_b[] = {
+    rgb_data_b + 0*CHAIN_LENGTH*3,
+    rgb_data_b + 1*CHAIN_LENGTH*3,
+    rgb_data_b + 2*CHAIN_LENGTH*3,
+    rgb_data_b + 3*CHAIN_LENGTH*3,
+    rgb_data_b + 4*CHAIN_LENGTH*3,
+    rgb_data_b + 5*CHAIN_LENGTH*3,
+    rgb_data_b + 6*CHAIN_LENGTH*3,
+    rgb_data_b + 7*CHAIN_LENGTH*3,
+    rgb_data_b + 8*CHAIN_LENGTH*3,
+    rgb_data_b + 9*CHAIN_LENGTH*3,
+};
+static uint8_t *rgb_data = rgb_data_b;
+static uint8_t **rgb_data_chain = rgb_data_chain_a;
+
+/* type (includes rotation), chain quadrant, chain channel */
+static uint16_t pixel_map[10*8] = {
+    0x039, 0x038, 0x037, 0x036, 0x420, 0x430, 0x00F, 0x00F, 0x00F, 0x00F, 
+    0x029, 0x028, 0x027, 0x026, 0x400, 0x410, 0x00F, 0x00F, 0x00F, 0x00F, 
+    0x019, 0x018, 0x017, 0x016, 0x421, 0x431, 0x00F, 0x00F, 0x00F, 0x00F, 
+    0x009, 0x008, 0x007, 0x006, 0x401, 0x411, 0x00F, 0x00F, 0x00F, 0x00F, 
+    0x00F, 0x00F, 0x00F, 0x00F, 0x00F, 0x00F, 0x00F, 0x00F, 0x00F, 0x00F, 
+    0x00F, 0x00F, 0x00F, 0x00F, 0x00F, 0x00F, 0x00F, 0x00F, 0x00F, 0x00F, 
+    0x00F, 0x00F, 0x00F, 0x00F, 0x00F, 0x00F, 0x00F, 0x00F, 0x00F, 0x00F, 
+    0x00F, 0x00F, 0x00F, 0x00F, 0x00F, 0x00F, 0x00F, 0x00F, 0x00F, 0x00F, 
 };
 
-static uint8_t counts[CHAIN_LENGTH] = {
-	1, 1, 1, 1, 1, 1, 1, 1,
-	1, 1, 1, 1, 1, 1, 1, 1,
-	1, 1, 1, 1, 1, 1, 1, 1,
-	1, 1, 1, 1, 1, 1, 1, 1,
-	1, 1, 1, 1, 1, 1, 1, 1,
-	1, 1, 1, 1, 1, 1, 1, 1,
-	1, 1, 1, 1, 1, 1, 1, 1,
-};
-
-static uint8_t *rgb_data[] = {
-	rgb_data_0, rgb_data_1, rgb_data_2, rgb_data_3,
-	rgb_data_4, rgb_data_5, rgb_data_6 };
-
-
-static void test_pattern(uint8_t length) {
-    uint8_t i, j, bytes;
+static void test_pattern(uint16_t length) {
+    uint16_t i, j, bytes;
     uint8_t pattern[] = {
         0x00, 0xff, 0x00, /* Red */
         0xff, 0x00, 0x00, /* Blue */
@@ -55,68 +65,73 @@ static void test_pattern(uint8_t length) {
         while (j < length*3) {
             bytes = (length*3 - j);
             if (bytes > sizeof(pattern)) bytes = sizeof(pattern);
-            memcpy(&rgb_data[i][j], pattern, bytes);
+            memcpy(&rgb_data_chain_a[i][j], pattern, bytes);
             j += bytes;
         }
     }
 }
 
 CY_ISR(raster_finished) {
-    if (update_pending_range) {
-	//update_pixel_range();
-	update_pending_range = 0;
-    }
-    if (update_pending_brightness) {
-	LED_RASTER_SetBrightness(brightness);
-	update_pending_brightness = 0;
-    }
     LED_TIMER_Enable();
-    //LED_WATCHDOG_RESET_Write(1);
 }
 
 CY_ISR(raster_refresh) {
-    LED_RASTER_UpdateDMA();
     LED_TIMER_Stop();
     LED_TIMER_RESET_Write(1);
+    raster_busy = false;
 }
 
-static void usb_poll(void) {
-    if (USBFS_GetConfiguration()) {
-        if (!usb_up) USBFS_CDC_Init();
-        usb_up = 1;
-    } else {
-        usb_up = 0;
-    }
-}
-
-void print(char *string) {
-    static char print_string[64];
-    if (!usb_up) return;
-    strcpy(print_string, string);
-    while (!USBFS_CDCIsReady()) {}
-    USBFS_PutData((uint8_t *)print_string, strlen(string));
+CY_ISR(sys_tick_handler) {
+    sys_tick++;
 }
 
 int main(void) {
-    int i = 0;
+    int sum, norm, new_frame = true, frame_time = 0, frame_num = 0;
+
+    /* API is broken and turns on I2C interrupt (15) */
+    CySysTickStart(); CyIntDisable(15);
+    CySysTickSetReload(BCLK__BUS_CLK__HZ/1000-1);
+    CySysTickClear();
+    CySysTickSetCallback(0, sys_tick_handler);
 
     USBFS_Start(0, USBFS_DWR_VDDD_OPERATION);
+    uvc_init(pixel_map);
+
     LED_FINISHED_StartEx(raster_finished);
     LED_UPDATE_StartEx(raster_refresh);
     LED_TIMER_Init();
+    LED_TIMER_WritePeriod(200);
 
     test_pattern(CHAIN_LENGTH);
-    LED_RASTER_SetupDMA(CHAIN_LENGTH, rgb_data, offsets, counts);
+    LED_RASTER_SetBrightness(0x10);
+    LED_RASTER_SetupDMA(CHAIN_LENGTH, offsets, counts);
 
     CyGlobalIntEnable;
 
     for(;;) {
-        if (i == 1000000) {
-            print("Loop running\n");
-            i = 0;
+        if (!raster_busy && (new_frame || ((sys_tick - frame_time) > 30))) {
+            raster_busy = true;
+            new_frame = false;
+            frame_time = sys_tick;
+            frame_num++;
+            frame_num %= 60;
+            LED_RASTER_UpdateDMA(rgb_data_chain);
         }
-
-        usb_poll();
-        i++;
+        if ((sum = uvc_loop(rgb_data)) >= 0) {
+            while (raster_busy) {}
+            new_frame = true;
+            if (rgb_data == rgb_data_a) {
+                rgb_data_chain = rgb_data_chain_a;
+                rgb_data = rgb_data_b;
+            } else {
+                rgb_data_chain = rgb_data_chain_b;
+                rgb_data = rgb_data_a;
+            }
+            norm = CHAIN_LENGTH*LED_RASTER_NUM_OUTPUTS*3*255 / (sum + 1);
+            if (norm > 256) norm = 256;
+            if (norm < 128) norm = 128;
+            LED_RASTER_SetBrightness((norm * LED_BRIGHTNESS) >> 8);
+        }
+        STATUS_LED_Write(frame_num < 30);
     }
 }
