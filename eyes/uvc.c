@@ -3,60 +3,15 @@
 
 static uint8_t ep_dma_buf[64];
 static uint8_t ep_work_buf[64 + 2];
-static uint16_t *pixel_map;
+static const int16_t *pixel_map;
+static int pixel_map_size;
 
 static int uvc_map_address(int idx) {
-    int x, y, quant_x, quant_y;
-    int map_addr, map_val;
-    int chain_idx, chain_quad, chain_type;
-    int mem_addr;
-
-    x = idx % 80;
-    y = idx / 80;
-    quant_x = x / 8;
-    quant_y = y / 8;
-
-    map_addr = quant_y*10 + quant_x;
-    map_val = pixel_map[map_addr];
-
-    chain_idx = (map_val >> 0) & 0xf;
-    chain_quad = (map_val >> 4) & 0xf;
-    chain_type = (map_val >> 8) & 0xf;
-
-    mem_addr = (chain_idx * 512);
-
-    if (chain_idx == 0xf) return -1;
-
-    switch (chain_type) {
-        case 0:
-            mem_addr += 64;
-            mem_addr += (chain_quad << 6);
-            mem_addr -= (y & 7) << 3;
-            if (y % 2) {
-                mem_addr += (x % 8);
-                mem_addr -= 8;
-            } else {
-                mem_addr -= (x % 8);
-                mem_addr -= 1;
-            }
-            break;
-        case 4:
-            mem_addr += 128;
-            mem_addr += (chain_quad / 2) * 128;
-            mem_addr -= (y % 8) * 16;
-            if (y % 2) {
-                mem_addr += (chain_quad % 2) * 8;
-                mem_addr += (x % 8);
-                mem_addr -= 16;
-            } else {
-                mem_addr -= (chain_quad % 2) * 8;
-                mem_addr -= (x % 8);
-                mem_addr -= 1;
-            }
-            break;
-    }
-
-    return mem_addr * 3;
+#ifdef NOOP_PIXMAP
+    return idx * 3;
+#else
+    return idx > pixel_map_size ? -1 : pixel_map[idx];
+#endif
 }
 
 static int uvc_process_packet(uint8_t *buf, int first, int last) {
@@ -125,8 +80,9 @@ int uvc_loop(uint8_t *buf) {
     return -1; 
 }
 
-void uvc_init(uint16_t *map) {
+void uvc_init(const int16_t *map, int size) {
     pixel_map = map;
+    pixel_map_size = size;
 }
 
 #define UVC_GET_CUR					0x81

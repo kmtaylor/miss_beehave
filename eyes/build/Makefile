@@ -9,7 +9,7 @@ CONFIG_DEPS := $(CYPRESS_DIR)/$(TARGET).cydwr \
 
 PROJECT_FILE  := $(CYPRESS_DIR)/$(TARGET).cyprj
 
-SRC := main.c USBFS_descr.c uvc.c
+SRC := main.c USBFS_descr.c uvc.c pixel_map.c
 OBJ := $(SRC:.c=.o)
 
 CC := arm-psoc-eabi-gcc

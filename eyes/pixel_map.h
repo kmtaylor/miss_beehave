@@ -1,0 +1,3 @@
+#define CHAIN_LENGTH 512
+
+const int16_t pixel_map[LED_RASTER_NUM_OUTPUTS*CHAIN_LENGTH];
