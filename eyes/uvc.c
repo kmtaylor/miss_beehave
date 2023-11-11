@@ -85,6 +85,24 @@ void uvc_init(const int16_t *map, int size) {
     pixel_map_size = size;
 }
 
+void uvc_test_pattern(uint8_t *buf) {
+    int i, addr;
+    uint8_t pattern[] = {
+        0x00, 0xff, 0x00, /* Red */
+        0xff, 0x00, 0x00, /* Blue */
+        0x00, 0x00, 0xff, /* Green */
+        0xff, 0xff, 0xff, /* White */
+    };
+
+    for (i = 0; i < pixel_map_size; i++) {
+        if ((addr = uvc_map_address(i)) >= 0) {
+            buf[addr + 0] = pattern[(i%4)*3 + 0];
+            buf[addr + 1] = pattern[(i%4)*3 + 1];
+            buf[addr + 2] = pattern[(i%4)*3 + 2];
+        }
+    }
+}
+
 #define UVC_GET_CUR					0x81
 #define UVC_GET_MIN					0x82
 #define UVC_GET_MAX					0x83

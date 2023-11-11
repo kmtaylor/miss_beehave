@@ -8,8 +8,8 @@
 
 static volatile int sys_tick = 0;
 static volatile int raster_busy = false;
-static uint8_t rgb_data_a[LED_RASTER_NUM_OUTPUTS*CHAIN_LENGTH*3];
-static uint8_t rgb_data_b[LED_RASTER_NUM_OUTPUTS*CHAIN_LENGTH*3];
+static uint8_t rgb_data_a[LED_RASTER_NUM_OUTPUTS*CHAIN_LENGTH*3] = { 0 };
+static uint8_t rgb_data_b[LED_RASTER_NUM_OUTPUTS*CHAIN_LENGTH*3] = { 0 };
 static uint8_t offsets[CHAIN_LENGTH] = { 0 };
 static uint8_t counts[CHAIN_LENGTH] = { [ 0 ... CHAIN_LENGTH-1] = 1 };
 static uint8_t *rgb_data_chain_a[] = {
@@ -38,26 +38,6 @@ static uint8_t *rgb_data_chain_b[] = {
 };
 static uint8_t *rgb_data = rgb_data_b;
 static uint8_t **rgb_data_chain = rgb_data_chain_a;
-
-static void test_pattern(uint16_t length) {
-    uint16_t i, j, bytes;
-    uint8_t pattern[] = {
-        0x00, 0xff, 0x00, /* Red */
-        0xff, 0x00, 0x00, /* Blue */
-        0x00, 0x00, 0xff, /* Green */
-        0xff, 0xff, 0xff, /* White */
-    };
-
-    for (i = 0; i < LED_RASTER_NUM_OUTPUTS; i++) {
-        j = 0;
-        while (j < length*3) {
-            bytes = (length*3 - j);
-            if (bytes > sizeof(pattern)) bytes = sizeof(pattern);
-            memcpy(&rgb_data_chain_a[i][j], pattern, bytes);
-            j += bytes;
-        }
-    }
-}
 
 CY_ISR(raster_finished) {
     LED_TIMER_Enable();
@@ -90,7 +70,7 @@ int main(void) {
     LED_TIMER_Init();
     LED_TIMER_WritePeriod(200);
 
-    test_pattern(CHAIN_LENGTH);
+    uvc_test_pattern(rgb_data_a);
     LED_RASTER_SetBrightness(0x10);
     LED_RASTER_SetupDMA(CHAIN_LENGTH, offsets, counts);
 
