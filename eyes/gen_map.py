@@ -11,11 +11,13 @@ print("")
 print("const int16_t pixel_map[LED_RASTER_NUM_OUTPUTS*CHAIN_LENGTH] = {")
 
 left_eye = np.loadtxt("left_eye.csv")
+right_eye = np.loadtxt("right_eye.csv")
 
-full_map = np.ones((64, 80))*-1
-full_map[0:48, 0:32] = left_eye*3
+full_map = np.ones((48, 64))*-1
+full_map[0:48,  0:32] = left_eye*3
+full_map[0:48, 32:64] = right_eye*3
 
-for i in range(64*80):
+for i in range(48*64):
     offset = int(full_map.flat[i])
     if (i % 8) == 0:
         print("    ", end='')
