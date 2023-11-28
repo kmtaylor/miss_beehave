@@ -55,7 +55,7 @@ const uint8 CYCODE USBFS_DEVICE0_DESCR[18u] = {
 const uint8 CYCODE USBFS_DEVICE0_CONFIGURATION0_DESCR[] = {
 /*  Config Descriptor Length               */ 0x09u,
 /*  DescriptorType: CONFIG                 */ 0x02u,
-/*  wTotalLength                           */ 0x83u, 0x00u,
+/*  wTotalLength                           */ 0x90u, 0x00u,
 /*  bNumInterfaces                         */ 0x02u,
 /*  bConfigurationValue                    */ 0x01u,
 /*  iConfiguration                         */ 0x01u,
@@ -95,15 +95,28 @@ const uint8 CYCODE USBFS_DEVICE0_CONFIGURATION0_DESCR[] = {
 /*  Associated terminal                    */ 0x02u,
 /*  String descriptor                      */ 0x00u,
 /*********************************************************************
+* Processing Unit Descriptor
+*********************************************************************/
+/*  Length                                 */ 0x0Du,
+/*  DescriptorType: Class interface        */ 0x24u,
+/*  Subtype                                */ 0x05u,
+/*  Unit ID                                */ 0x02u,
+/*  Source ID                              */ 0x01u,
+/*  Max Multiplier                         */ 0x00u, 0x00u,
+/*  Control Size                           */ 0x03u,
+/*  Controls                               */ 0x01u, 0x00u, 0x00,
+/*  iProcessing                            */ 0x00u,
+/*  Video Standards                        */ 0x00u,
+/*********************************************************************
 * Video Output Terminal Descriptor
 *********************************************************************/
 /*  Length                                 */ 0x09u,
 /*  DescriptorType: Class interface        */ 0x24u,
 /*  Subtype                                */ 0x03u,
-/*  Terminal ID                            */ 0x02u,
+/*  Terminal ID                            */ 0x03u,
 /*  Terminal type                          */ 0x01u, 0x03u,
 /*  Associated terminal                    */ 0x01u,
-/*  Source ID                              */ 0x01u,
+/*  Source ID                              */ 0x02u,
 /*  String descriptor                      */ 0x00u,
 /*********************************************************************
 * Interface Descriptor
@@ -116,7 +129,7 @@ const uint8 CYCODE USBFS_DEVICE0_CONFIGURATION0_DESCR[] = {
 /*  bInterfaceClass                        */ 0x0Eu,
 /*  bInterfaceSubClass                     */ 0x02u,
 /*  bInterfaceProtocol                     */ 0x01u,
-/*  iInterface                             */ 0x03u,
+/*  iInterface                             */ 0x02u,
 /*********************************************************************
 * Video Streaming Header
 *********************************************************************/

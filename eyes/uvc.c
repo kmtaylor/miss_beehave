@@ -108,9 +108,11 @@ void uvc_test_pattern(uint8_t *buf) {
 #define UVC_GET_MAX					0x83
 #define UVC_GET_DEF					0x87
 #define UVC_SET_CUR					0x01
+#define UVC_GET_INFO					0x86
+#define UVC_GET_RES					0x84
 
-uint8_t set_control_data[48];
-uint8_t get_control_data[48] = {
+static uint8_t set_control_data[48];
+static uint8_t get_control_data[48] = {
 /* bmHint                                  */ 0x00u, 0x00u,
 /* bFormatIndex                            */ 0x00u,
 /* bFrameIndex                             */ 0x00u,
@@ -136,11 +138,55 @@ uint8_t get_control_data[48] = {
                                               0x00u, 0x00u, 0x00u, 0x00u,
 };
 
-static uint8_t uvc_class_get(void) {
-    //uint8_t RqstRcpt = USBFS_bmRequestTypeReg & USBFS_RQST_RCPT_MASK;
-    //uint8_t wValueHi = USBFS_wValueHiReg;
-    //uint8_t epNumber = USBFS_wIndexLoReg & USBFS_DIR_UNUSED;
+static uint8_t get_info_data[1] = { 0x03 }; /* Set and get requests */
+static uint8_t uvc_brightness_min[2] = { 0x00, 0x00 };
+static uint8_t uvc_brightness_max[2] = { 0xFF, 0x00 };
+static uint8_t uvc_brightness_def[2] = { 0x20, 0x00 };
+static uint8_t uvc_brightness_cur[2] = { 0x20, 0x00 };
+static uint8_t uvc_brightness_res[2] = { 0x01, 0x00 };
 
+static uint8_t uvc_class_get_control(uint8_t unit_id, uint8_t selector) {
+    switch (USBFS_bRequestReg) {
+        case UVC_GET_MIN:
+            USBFS_currentTD.wCount = 2;
+            USBFS_currentTD.pData = uvc_brightness_min;
+            return USBFS_InitControlRead();
+        case UVC_GET_MAX:
+            USBFS_currentTD.wCount = 2;
+            USBFS_currentTD.pData = uvc_brightness_max;
+            return USBFS_InitControlRead();
+        case UVC_GET_DEF:
+            USBFS_currentTD.wCount = 2;
+            USBFS_currentTD.pData = uvc_brightness_def;
+            return USBFS_InitControlRead();
+        case UVC_GET_CUR:
+            USBFS_currentTD.wCount = 2;
+            USBFS_currentTD.pData = uvc_brightness_cur;
+            return USBFS_InitControlRead();
+        case UVC_GET_RES:
+            USBFS_currentTD.wCount = 2;
+            USBFS_currentTD.pData = uvc_brightness_res;
+            return USBFS_InitControlRead();
+        case UVC_GET_INFO:
+            USBFS_currentTD.wCount = 1;
+            USBFS_currentTD.pData = get_info_data;
+            return USBFS_InitControlRead();
+    }
+    return 0;
+}
+
+static uint8_t uvc_class_set_control(uint8_t unit_id, uint8_t selector) {
+    switch (USBFS_bRequestReg) {
+        case UVC_SET_CUR:
+            USBFS_currentTD.wCount = 2;
+            USBFS_currentTD.pData = uvc_brightness_cur;
+            return USBFS_InitControlWrite();
+    }
+
+    return 0;
+}
+
+static uint8_t uvc_class_get_streaming(void) {
     switch (USBFS_bRequestReg) {
         case UVC_GET_MIN:
         case UVC_GET_MAX:
@@ -154,7 +200,7 @@ static uint8_t uvc_class_get(void) {
     return 0;
 }
 
-static uint8_t uvc_class_set(void) {
+static uint8_t uvc_class_set_streaming(void) {
     switch (USBFS_bRequestReg) {
         case UVC_SET_CUR:
             USBFS_currentTD.wCount = sizeof(set_control_data);
@@ -166,8 +212,17 @@ static uint8_t uvc_class_set(void) {
 }
 
 uint8 USBFS_DispatchClassRqst_Callback(uint8 interfaceNumber) {
-    if (USBFS_bmRequestTypeReg & USBFS_RQST_DIR_D2H)
-        return uvc_class_get();
-    else
-        return uvc_class_set();
+    if (USBFS_wIndexLoReg == 1) { // Streaming interface
+        if (USBFS_bmRequestTypeReg & USBFS_RQST_DIR_D2H)
+            return uvc_class_get_streaming();
+        else
+            return uvc_class_set_streaming();
+    }
+    if (USBFS_wIndexLoReg == 0) { // Control interface
+        if (USBFS_bmRequestTypeReg & USBFS_RQST_DIR_D2H)
+            return uvc_class_get_control(USBFS_wIndexHiReg, USBFS_wValueHiReg);
+        else
+            return uvc_class_set_control(USBFS_wIndexHiReg, USBFS_wValueHiReg);
+    }
+    return 0;
 }
