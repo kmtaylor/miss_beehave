@@ -8,7 +8,7 @@ static int pixel_map_size;
 
 static int uvc_map_address(int idx) {
 #ifdef NOOP_PIXMAP
-    return idx * 3;
+    return idx > 32*48 ? idx*3 + 6144 : idx*3;
 #else
     return idx > pixel_map_size ? -1 : pixel_map[idx];
 #endif

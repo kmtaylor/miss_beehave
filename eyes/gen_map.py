@@ -10,8 +10,10 @@ print("#include \"pixel_map.h\"")
 print("")
 print("const int16_t pixel_map[LED_RASTER_NUM_OUTPUTS*CHAIN_LENGTH] = {")
 
-left_eye = np.loadtxt("left_eye.csv")
-right_eye = np.loadtxt("right_eye.csv")
+left_eye = np.loadtxt("scripts/pix_map_left.csv", delimiter=',')
+right_eye = np.loadtxt("scripts/pix_map_right.csv", delimiter=',')
+
+left_eye[left_eye > 0] += 2048
 
 full_map = np.ones((48, 64))*-1
 full_map[0:48,  0:32] = left_eye*3
