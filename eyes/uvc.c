@@ -80,9 +80,16 @@ int uvc_loop(uint8_t *buf) {
     return -1; 
 }
 
-void uvc_init(const int16_t *map, int size) {
+int uvc_init(const int16_t *map, int size) {
+    int i, max_sum = 0;
+
     pixel_map = map;
     pixel_map_size = size;
+
+    for (i = 0; i < pixel_map_size; i++) {
+        if (uvc_map_address(i) >= 0) max_sum += 3*255;
+    }
+    return max_sum;
 }
 
 void uvc_test_pattern(uint8_t *buf) {

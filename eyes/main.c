@@ -54,7 +54,7 @@ CY_ISR(sys_tick_handler) {
 }
 
 int main(void) {
-    int sum, norm, new_frame = true, frame_time = 0, frame_num = 0;
+    int max_sum, sum, norm, new_frame = true, frame_time = 0, frame_num = 0;
 
     /* API is broken and turns on I2C interrupt (15) */
     CySysTickStart(); CyIntDisable(15);
@@ -63,7 +63,7 @@ int main(void) {
     CySysTickSetCallback(0, sys_tick_handler);
 
     USBFS_Start(0, USBFS_DWR_VDDD_OPERATION);
-    uvc_init(pixel_map, LED_RASTER_NUM_OUTPUTS*CHAIN_LENGTH);
+    max_sum = uvc_init(pixel_map, sizeof(pixel_map)/sizeof(pixel_map[0]));
 
     LED_FINISHED_StartEx(raster_finished);
     LED_UPDATE_StartEx(raster_refresh);
@@ -95,10 +95,11 @@ int main(void) {
                 rgb_data_chain = rgb_data_chain_b;
                 rgb_data = rgb_data_a;
             }
-            norm = CHAIN_LENGTH*LED_RASTER_NUM_OUTPUTS*3*255 / (sum + 1);
-            if (norm > 256) norm = 256;
-            if (norm < 128) norm = 128;
-            LED_RASTER_SetBrightness((norm * uvc_get_brightness()) >> 8);
+            norm = (max_sum << 8) / (sum + 1);
+            if (norm > (1 << 23)) norm = (1 << 23);
+            norm = ((norm * uvc_get_brightness()) >> 8) + 1;
+            if (norm > 255) norm = 255;
+            LED_RASTER_SetBrightness(norm);
         }
         STATUS_LED_Write(frame_num < 30);
     }
