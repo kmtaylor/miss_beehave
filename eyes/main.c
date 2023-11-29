@@ -98,7 +98,7 @@ int main(void) {
             norm = CHAIN_LENGTH*LED_RASTER_NUM_OUTPUTS*3*255 / (sum + 1);
             if (norm > 256) norm = 256;
             if (norm < 128) norm = 128;
-            LED_RASTER_SetBrightness((norm * LED_BRIGHTNESS) >> 8);
+            LED_RASTER_SetBrightness((norm * uvc_get_brightness()) >> 8);
         }
         STATUS_LED_Write(frame_num < 30);
     }

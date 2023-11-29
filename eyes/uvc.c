@@ -103,6 +103,12 @@ void uvc_test_pattern(uint8_t *buf) {
     }
 }
 
+static uint8_t uvc_brightness_cur[2] = { 0x20, 0x00 };
+
+int uvc_get_brightness(void) {
+    return uvc_brightness_cur[0];
+}
+
 #define UVC_GET_CUR					0x81
 #define UVC_GET_MIN					0x82
 #define UVC_GET_MAX					0x83
@@ -142,7 +148,6 @@ static uint8_t get_info_data[1] = { 0x03 }; /* Set and get requests */
 static uint8_t uvc_brightness_min[2] = { 0x00, 0x00 };
 static uint8_t uvc_brightness_max[2] = { 0xFF, 0x00 };
 static uint8_t uvc_brightness_def[2] = { 0x20, 0x00 };
-static uint8_t uvc_brightness_cur[2] = { 0x20, 0x00 };
 static uint8_t uvc_brightness_res[2] = { 0x01, 0x00 };
 
 static uint8_t uvc_class_get_control(uint8_t unit_id, uint8_t selector) {
