@@ -1,13 +1,20 @@
 #include <project.h>
 #include <stdbool.h>
+#include <math.h>
 
 #include "uvc.h"
 #include "pixel_map.h"
 
-#define LED_BRIGHTNESS 20
+#define BRIGHTNESS_MAX  70
+#define BRIGHTNESS_INIT 20
+#define BRIGHTNESS_TIME 1.0
+#define BRIGHTNESS_LP ((int64_t) \
+        ((1.0 - exp(-1.0 / BRIGHTNESS_TIME / 1000)) * (1 << 23)))
 
 static volatile int sys_tick = 0;
 static volatile int raster_busy = false;
+static volatile int brightness_lp = 0;
+static volatile int brightness = (BRIGHTNESS_INIT << 23);
 static uint8_t rgb_data_a[LED_RASTER_NUM_OUTPUTS*CHAIN_LENGTH*3] = { 0 };
 static uint8_t rgb_data_b[LED_RASTER_NUM_OUTPUTS*CHAIN_LENGTH*3] = { 0 };
 static uint8_t offsets[CHAIN_LENGTH] = { 0 };
@@ -50,6 +57,7 @@ CY_ISR(raster_refresh) {
 }
 
 CY_ISR(sys_tick_handler) {
+    brightness_lp += ((brightness - brightness_lp) * BRIGHTNESS_LP) >> 23;
     sys_tick++;
 }
 
@@ -63,7 +71,9 @@ int main(void) {
     CySysTickSetCallback(0, sys_tick_handler);
 
     USBFS_Start(0, USBFS_DWR_VDDD_OPERATION);
-    max_sum = uvc_init(pixel_map, sizeof(pixel_map)/sizeof(pixel_map[0]));
+    max_sum = uvc_init(pixel_map,
+                       sizeof(pixel_map)/sizeof(pixel_map[0]),
+                       BRIGHTNESS_INIT);
 
     LED_FINISHED_StartEx(raster_finished);
     LED_UPDATE_StartEx(raster_refresh);
@@ -71,18 +81,19 @@ int main(void) {
     LED_TIMER_WritePeriod(200);
 
     uvc_test_pattern(rgb_data_a);
-    LED_RASTER_SetBrightness(0x10);
+    LED_RASTER_SetBrightness(brightness_lp >> 23);
     LED_RASTER_SetupDMA(CHAIN_LENGTH, offsets, counts);
 
     CyGlobalIntEnable;
 
     for(;;) {
-        if (!raster_busy && (new_frame || ((sys_tick - frame_time) > 30))) {
+        if (!raster_busy && (new_frame || ((sys_tick - frame_time) > 40))) {
             raster_busy = true;
             new_frame = false;
             frame_time = sys_tick;
             frame_num++;
-            frame_num %= 60;
+            frame_num %= 50;
+            LED_RASTER_SetBrightness(brightness_lp >> 23);
             LED_RASTER_UpdateDMA(rgb_data_chain);
         }
         if ((sum = uvc_loop(rgb_data)) >= 0) {
@@ -98,9 +109,9 @@ int main(void) {
             norm = (max_sum << 8) / (sum + 1);
             if (norm > (1 << 23)) norm = (1 << 23);
             norm = ((norm * uvc_get_brightness()) >> 8) + 1;
-            if (norm > 255) norm = 255;
-            LED_RASTER_SetBrightness(norm);
+            if (norm > BRIGHTNESS_MAX) norm = BRIGHTNESS_MAX;
+            brightness = (norm << 23);
         }
-        STATUS_LED_Write(frame_num < 30);
+        STATUS_LED_Write(frame_num < 25);
     }
 }

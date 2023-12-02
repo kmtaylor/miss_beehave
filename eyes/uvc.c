@@ -5,6 +5,8 @@ static uint8_t ep_dma_buf[64];
 static uint8_t ep_work_buf[64 + 2];
 static const int16_t *pixel_map;
 static int pixel_map_size;
+static uint8_t uvc_brightness_cur[2] = { 0 };
+static uint8_t uvc_brightness_def[2] = { 0 };
 
 static int uvc_map_address(int idx) {
 #ifdef NOOP_PIXMAP
@@ -80,11 +82,13 @@ int uvc_loop(uint8_t *buf) {
     return -1; 
 }
 
-int uvc_init(const int16_t *map, int size) {
+int uvc_init(const int16_t *map, int size, uint8_t default_brightness) {
     int i, max_sum = 0;
 
     pixel_map = map;
     pixel_map_size = size;
+    uvc_brightness_def[0] = default_brightness;
+    uvc_brightness_cur[0] = default_brightness;
 
     for (i = 0; i < pixel_map_size; i++) {
         if (uvc_map_address(i) >= 0) max_sum += 3*255;
@@ -109,8 +113,6 @@ void uvc_test_pattern(uint8_t *buf) {
         }
     }
 }
-
-static uint8_t uvc_brightness_cur[2] = { 0x20, 0x00 };
 
 int uvc_get_brightness(void) {
     return uvc_brightness_cur[0];
@@ -154,7 +156,6 @@ static uint8_t get_control_data[48] = {
 static uint8_t get_info_data[1] = { 0x03 }; /* Set and get requests */
 static uint8_t uvc_brightness_min[2] = { 0x00, 0x00 };
 static uint8_t uvc_brightness_max[2] = { 0xFF, 0x00 };
-static uint8_t uvc_brightness_def[2] = { 0x20, 0x00 };
 static uint8_t uvc_brightness_res[2] = { 0x01, 0x00 };
 
 static uint8_t uvc_class_get_control(uint8_t unit_id, uint8_t selector) {
