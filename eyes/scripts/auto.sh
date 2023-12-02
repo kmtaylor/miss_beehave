@@ -1,11 +1,13 @@
 #!/bin/bash
 
-sudo insmod /lib/modules/6.1.21-v7+/extra/v4l2loopback.ko.xz
-
 get_loopback() {
     loopback=`v4l2-ctl --list-devices | \
         grep "v4l2loopback" -A 1 | tail -1 | sed 's/[[:space:]]//g'`
 }
+
+sudo insmod /lib/modules/6.1.21-v7+/extra/v4l2loopback.ko.xz
+get_loopback
+sudo /home/upper/v4l2loopback/utils/v4l2loopback-ctl set-fps $loopback 50
 
 get_led_raster() {
     led_raster=`v4l2-ctl --list-devices | grep "LED Raster" -A 1`
@@ -16,11 +18,10 @@ get_led_raster() {
 
 check_gst-launch() {
     if [ "`pidof gst-launch-1.0`" = "" ] ; then
-        get_loopback
         get_led_raster || return -1
         gst-launch-1.0 -v \
             v4l2src device=$loopback ! \
-            videoconvert ! videorate ! \
+            videoconvert ! \
             v4l2sink device=$led_raster &
         return -1
     fi
