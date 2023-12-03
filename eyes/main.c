@@ -5,7 +5,7 @@
 #include "uvc.h"
 #include "pixel_map.h"
 
-#define BRIGHTNESS_MAX  70
+#define BRIGHTNESS_MAX  128
 #define BRIGHTNESS_INIT 20
 #define BRIGHTNESS_TIME 1.0
 #define BRIGHTNESS_LP ((int64_t) \
