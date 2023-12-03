@@ -59,6 +59,12 @@ static void update_roboteq(uint16_t addr, uint16_t val) {
     Serial1.write(message, 13);
 }
 
+static int16_t roboteq_curve(int16_t val) {
+    const float alpha = 1.2;
+    const float unity = 1000;
+    return (int16_t) unity / tan(alpha) * tan(alpha/unity *  val);
+}
+
 enum modbus_regs_e {
     MB_LED_STATE = 0,
     MB_ADC_VAL0,
@@ -136,7 +142,7 @@ void loop() {
     }
 
     if (roboteq_channel >= 0) {
-        update_roboteq(roboteq_channel + 1, roboteq_drive[roboteq_channel]);
+        update_roboteq(roboteq_channel + 1, roboteq_curve(roboteq_drive[roboteq_channel]));
         mb_regs[roboteq_channel == 0 ? MB_DRIVE0 : MB_DRIVE1] = roboteq_drive[roboteq_channel];
         roboteq_ctx = -1;
     }
