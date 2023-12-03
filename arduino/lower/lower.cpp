@@ -118,19 +118,19 @@ void loop() {
         /* Update roboteq with RC values */
         if (rc_left_right > 1500) {
             if (rc_forward_back > 1500) {
-                roboteq_drive[0] = (rc_forward_back - 1500);
-                roboteq_drive[1] = (rc_forward_back - 1500) - 0.5*(rc_left_right - 1500);
+                roboteq_drive[0] = (rc_forward_back - 1500)*2;
+                roboteq_drive[1] = (rc_forward_back - 1500)*2 - 0.5*(rc_left_right - 1500);
             } else {
-                roboteq_drive[0] = (rc_forward_back - 1500);
-                roboteq_drive[1] = (rc_forward_back - 1500) + 0.5*(rc_left_right - 1500);
+                roboteq_drive[0] = (rc_forward_back - 1500)*2;
+                roboteq_drive[1] = (rc_forward_back - 1500)*2 + 0.5*(rc_left_right - 1500);
             }
         } else {
             if (rc_forward_back > 1500) {
-                roboteq_drive[0] = (rc_forward_back - 1500) + 0.5*(rc_left_right - 1500);
-                roboteq_drive[1] = (rc_forward_back - 1500);
+                roboteq_drive[0] = (rc_forward_back - 1500)*2 + 0.5*(rc_left_right - 1500);
+                roboteq_drive[1] = (rc_forward_back - 1500)*2;
             } else {
-                roboteq_drive[0] = (rc_forward_back - 1500) - 0.5*(rc_left_right - 1500);
-                roboteq_drive[1] = (rc_forward_back - 1500);
+                roboteq_drive[0] = (rc_forward_back - 1500)*2 - 0.5*(rc_left_right - 1500);
+                roboteq_drive[1] = (rc_forward_back - 1500)*2;
             }
         }
     }
