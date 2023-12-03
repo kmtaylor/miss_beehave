@@ -15,6 +15,6 @@ play_gif() {
 while true ; do
     play_gif 3 MissBeehaveEyes2black.gif
     play_gif 3 xr_symbol_morph.gif
-    play_gif 3 MissBeehaveEyes2.gif
+    play_gif 3 MissBeehaveEyes2black.gif
     play_gif 3 colour.gif
 done
