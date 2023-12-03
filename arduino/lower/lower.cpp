@@ -85,7 +85,7 @@ void setup() {
 
 
 void loop() {
-    uint8_t rc_valid;
+    static uint8_t rc_valid = 0;
     int16_t rc_left_right, rc_forward_back;
     int16_t roboteq_drive[2];
     uint16_t mb_val;
@@ -99,8 +99,13 @@ void loop() {
     if (rc_ibus.available()) {
         rc_left_right = rc_ibus.get(1);
         rc_forward_back = rc_ibus.get(3);
-        rc_valid = (rc_ibus.get(0) == 1) &&
-                   (rc_ibus.get(5) == 2000) && (rc_ibus.get(6) == 2000);
+        if (rc_valid) {
+            rc_valid  = (rc_ibus.get(5) == 2000) || (rc_ibus.get(6) == 2000);
+            rc_valid &= (rc_ibus.get(0) == 1);
+        } else {
+            rc_valid  = (rc_ibus.get(5) == 2000) && (rc_ibus.get(6) == 2000);
+            rc_valid &= (rc_ibus.get(0) == 1);
+        }
     } else {
         /* Lost iBus connection to RC module */
         rc_valid = 0;
