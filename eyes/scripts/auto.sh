@@ -19,7 +19,7 @@ get_led_raster() {
 check_gst-launch() {
     if [ "`pidof gst-launch-1.0`" = "" ] ; then
         get_led_raster || return -1
-        v4l2-ctl -d $led_raster --set-ctrl brightness=100
+        v4l2-ctl -d $led_raster --set-ctrl brightness=30
         gst-launch-1.0 -v \
             v4l2src device=$loopback ! \
             videoconvert ! \
