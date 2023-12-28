@@ -23,6 +23,8 @@ program:
 
 OBJS := upper.o
 OBJS += ../lib/modbusino/Modbusino.o
+OBJS += $(ARDUINO_CORE)/libraries/Wire/src/utility/twi.o
+OBJS += $(ARDUINO_CORE)/libraries/Wire/src/Wire.o
 
 CFLAGS := -DARDUINO_ARCH_STM32
 CFLAGS += -DARDUINO_GENERIC_F207VCTX
@@ -65,9 +67,11 @@ INCLUDE += -I$(ARDUINO_DRIVERS)/$(FAMILY)_HAL_Driver/Src
 INCLUDE += -I$(ARDUINO_DRIVERS)/CMSIS/Device/ST/$(FAMILY)/Include 
 INCLUDE += -I$(ARDUINO_DRIVERS)/CMSIS/Device/ST/$(FAMILY)/Source/Templates/gcc
 INCLUDE += -I$(ARDUINO_CORE)/variants/$(VARIANT)
-INCLUDE += -I ../lib/modbusino 
+INCLUDE += -I../lib/modbusino 
+INCLUDE += -I$(ARDUINO_CORE)/libraries/Wire/src
 INCLUDE := $(call quote, $(INCLUDE))
 
+OBJS += $(ARDUINO_CORE)/cores/arduino/pins_arduino.o
 OBJS += $(ARDUINO_CORE)/cores/arduino/main.o
 OBJS += $(ARDUINO_CORE)/cores/arduino/hooks.o
 OBJS += $(ARDUINO_CORE)/cores/arduino/board.o
@@ -115,9 +119,12 @@ OBJS += $(ARDUINO_CORE)/libraries/SrcWrapper/src/HAL/stm32yyxx_hal_cortex.o
 OBJS += $(ARDUINO_CORE)/libraries/SrcWrapper/src/HAL/stm32yyxx_hal_dac.o
 OBJS += $(ARDUINO_CORE)/libraries/SrcWrapper/src/HAL/stm32yyxx_hal_tim.o
 OBJS += $(ARDUINO_CORE)/libraries/SrcWrapper/src/HAL/stm32yyxx_hal_tim_ex.o
+OBJS += $(ARDUINO_CORE)/libraries/SrcWrapper/src/HAL/stm32yyxx_hal_i2c.o
+OBJS += $(ARDUINO_CORE)/libraries/SrcWrapper/src/LL/stm32yyxx_ll_rcc.o
+OBJS += $(ARDUINO_CORE)/libraries/SrcWrapper/src/LL/stm32yyxx_ll_gpio.o
 OBJS += $(ARDUINO_CORE)/libraries/SrcWrapper/src/LL/stm32yyxx_ll_usb.o
 OBJS += $(ARDUINO_CORE)/libraries/SrcWrapper/src/LL/stm32yyxx_ll_tim.o
-OBJS += $(ARDUINO_CORE)/libraries/SrcWrapper/src/LL/stm32yyxx_ll_gpio.o
+OBJS += $(ARDUINO_CORE)/libraries/SrcWrapper/src/LL/stm32yyxx_ll_i2c.o
 
 $(TARGET).bin: $(TARGET).elf
 	$(ARM-OBJCOPY) -O binary $< $@
