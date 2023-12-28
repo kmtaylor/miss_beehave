@@ -6,7 +6,8 @@ ARDUINO_CORE := ../lib/Arduino_Core_STM32
 ARDUINO_MIDDLEWARES := $(ARDUINO_CORE)/system/Middlewares
 ARDUINO_DRIVERS     := $(ARDUINO_CORE)/system/Drivers
 
-VARIANT := STM32F2xx/F207V(C-E-F-G)T_F217V(E-G)T
+FAMILY	:= STM32F2xx
+VARIANT := $(FAMILY)/F207V(C-E-F-G)T_F217V(E-G)T
 
 # Needed for dealing with mal-formed VARIANT name
 quote = $(patsubst %, "%", $(1))
@@ -58,11 +59,11 @@ INCLUDE += -I$(ARDUINO_CORE)/cores/arduino/stm32/usb/cdc
 INCLUDE += -I$(ARDUINO_MIDDLEWARES)/ST/STM32_USB_Device_Library/Core/Inc 
 INCLUDE += -I$(ARDUINO_MIDDLEWARES)/ST/STM32_USB_Device_Library/Core/Src 
 INCLUDE += -I../lib/CMSIS_5/CMSIS/Core/Include 
-INCLUDE += -I$(ARDUINO_CORE)/system/STM32F2xx 
-INCLUDE += -I$(ARDUINO_CORE)/system/Drivers/STM32F2xx_HAL_Driver/Inc 
-INCLUDE += -I$(ARDUINO_CORE)/system/Drivers/STM32F2xx_HAL_Driver/Src 
-INCLUDE += -I$(ARDUINO_DRIVERS)/CMSIS/Device/ST/STM32F2xx/Include 
-INCLUDE += -I$(ARDUINO_DRIVERS)/CMSIS/Device/ST/STM32F2xx/Source/Templates/gcc
+INCLUDE += -I$(ARDUINO_CORE)/system/$(FAMILY)
+INCLUDE += -I$(ARDUINO_DRIVERS)/$(FAMILY)_HAL_Driver/Inc 
+INCLUDE += -I$(ARDUINO_DRIVERS)/$(FAMILY)_HAL_Driver/Src 
+INCLUDE += -I$(ARDUINO_DRIVERS)/CMSIS/Device/ST/$(FAMILY)/Include 
+INCLUDE += -I$(ARDUINO_DRIVERS)/CMSIS/Device/ST/$(FAMILY)/Source/Templates/gcc
 INCLUDE += -I$(ARDUINO_CORE)/variants/$(VARIANT)
 INCLUDE += -I ../lib/modbusino 
 INCLUDE := $(call quote, $(INCLUDE))
@@ -111,10 +112,12 @@ OBJS += $(ARDUINO_CORE)/libraries/SrcWrapper/src/HAL/stm32yyxx_hal_pcd.o
 OBJS += $(ARDUINO_CORE)/libraries/SrcWrapper/src/HAL/stm32yyxx_hal_pcd_ex.o
 OBJS += $(ARDUINO_CORE)/libraries/SrcWrapper/src/HAL/stm32yyxx_hal_rcc.o
 OBJS += $(ARDUINO_CORE)/libraries/SrcWrapper/src/HAL/stm32yyxx_hal_cortex.o
+OBJS += $(ARDUINO_CORE)/libraries/SrcWrapper/src/HAL/stm32yyxx_hal_dac.o
+OBJS += $(ARDUINO_CORE)/libraries/SrcWrapper/src/HAL/stm32yyxx_hal_tim.o
+OBJS += $(ARDUINO_CORE)/libraries/SrcWrapper/src/HAL/stm32yyxx_hal_tim_ex.o
 OBJS += $(ARDUINO_CORE)/libraries/SrcWrapper/src/LL/stm32yyxx_ll_usb.o
-OBJS += $(ARDUINO_DRIVERS)/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_dac.o
-OBJS += $(ARDUINO_DRIVERS)/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_tim.o
-OBJS += $(ARDUINO_DRIVERS)/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_tim_ex.o
+OBJS += $(ARDUINO_CORE)/libraries/SrcWrapper/src/LL/stm32yyxx_ll_tim.o
+OBJS += $(ARDUINO_CORE)/libraries/SrcWrapper/src/LL/stm32yyxx_ll_gpio.o
 
 $(TARGET).bin: $(TARGET).elf
 	$(ARM-OBJCOPY) -O binary $< $@
