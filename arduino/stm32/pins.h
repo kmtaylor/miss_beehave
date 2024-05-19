@@ -6,19 +6,20 @@
 #define INP7        PC6
 #define INP8        PC7
 
-#define LVL0        PE7
-#define LVL1        PE8
-#define LVL2        PE9
-#define LVL3        PE10
-#define LVL4        PE11
+#define ESTOP       PC12
+
+#define CPX         PE14
+#define DIX         PE15
 #define CPY         PE12
 #define DIY         PE13
-#define CPX         PE14
-#define LVL8        PE15
-#define LVL9        PB2
-#define LVL10       PC2 
-#define LVL11       PC3
-#define LVL12       PA0
-#define LVL13       PE4
-#define LVL14       PE5
-#define LVL15       PE6
+#define CPZ         PE9
+#define DIZ         PE11
+#define CPA         PE5
+#define DIA         PE10
+#define CPB         PE4
+#define DIB         PE8
+#define CPC         PE7
+#define DIC         PE6
+#define VSO         PC2 
+#define OUT1        PC3
+#define OUT2        PA0

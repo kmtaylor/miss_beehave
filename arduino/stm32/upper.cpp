@@ -40,40 +40,25 @@ static void setup_pins(void) {
     pinMode(OUT8, OUTPUT);
     pinMode(OUT10, OUTPUT);
 
+    /* Direct pins */
+    pinMode(ESTOP, OUTPUT);
+
     /* Level shifted pins */
-    pinMode(LVL0, OUTPUT);
-    pinMode(LVL1, OUTPUT);
-    pinMode(LVL2, OUTPUT);
-    pinMode(LVL3, OUTPUT);
-    pinMode(LVL4, OUTPUT);
+    pinMode(CPX, OUTPUT);
+    pinMode(DIX, OUTPUT);
     pinMode(CPY, OUTPUT);
     pinMode(DIY, OUTPUT);
-    pinMode(CPX, OUTPUT);
-    pinMode(LVL8, OUTPUT);
-    pinMode(LVL9, OUTPUT);
-    pinMode(LVL10, OUTPUT);
-    pinMode(LVL11, OUTPUT);
-    pinMode(LVL12, OUTPUT);
-    pinMode(LVL13, OUTPUT);
-    pinMode(LVL14, OUTPUT);
-    pinMode(LVL15, OUTPUT);
-
-    digitalWrite(LVL0, 0);
-    digitalWrite(LVL1, 0);
-    digitalWrite(LVL2, 0);
-    digitalWrite(LVL3, 0);
-    digitalWrite(LVL4, 0);
-    digitalWrite(CPY, 0);
-    digitalWrite(DIY, 0);
-    digitalWrite(CPX, 0);
-    digitalWrite(LVL8, 0);
-    digitalWrite(LVL9, 0);
-    digitalWrite(LVL10, 0);
-    digitalWrite(LVL11, 0);
-    digitalWrite(LVL12, 0);
-    digitalWrite(LVL13, 0);
-    digitalWrite(LVL14, 0);
-    digitalWrite(LVL15, 0);
+    pinMode(DIZ, OUTPUT);
+    pinMode(CPZ, OUTPUT);
+    pinMode(CPA, OUTPUT);
+    pinMode(DIA, OUTPUT);
+    pinMode(CPB, OUTPUT);
+    pinMode(DIB, OUTPUT);
+    pinMode(CPC, OUTPUT);
+    pinMode(DIC, OUTPUT);
+    pinMode(VSO, OUTPUT);
+    pinMode(OUT1, OUTPUT);
+    pinMode(OUT2, OUTPUT);
 }
 
 static void system_tick(void) {
@@ -81,18 +66,80 @@ static void system_tick(void) {
     static int lamp = 0;
 
     count++;
-    /*
     if (count == 99) {
-        digitalWrite(LVL4, lamp);
-        lamp = !lamp;
+        digitalWrite(CPX, 0);
+        digitalWrite(DIX, 0);
+        digitalWrite(CPY, 0);
+        digitalWrite(DIY, 0);
+        digitalWrite(DIZ, 0);
+        digitalWrite(CPZ, 0);
+        digitalWrite(CPA, 0);
+        digitalWrite(DIA, 0);
+        digitalWrite(CPB, 0);
+        digitalWrite(DIB, 0);
+        digitalWrite(CPC, 0);
+        digitalWrite(DIC, 0);
+        digitalWrite(VSO, 0);
+        digitalWrite(OUT1, 0);
+        digitalWrite(OUT2, 0);
+        switch(lamp) {
+            case 0:
+                digitalWrite(CPX, 1);
+                break;
+            case 1:
+                digitalWrite(DIX, 1);
+                break;
+            case 2:
+                digitalWrite(CPY, 1);
+                break;
+            case 3:
+                digitalWrite(DIY, 1);
+                break;
+            case 4:
+                digitalWrite(CPZ, 1);
+                break;
+            case 5:
+                digitalWrite(DIZ, 1);
+                break;
+            case 6:
+                digitalWrite(CPA, 1);
+                break;
+            case 7:
+                digitalWrite(DIA, 1);
+                break;
+            case 8:
+                digitalWrite(CPB, 1);
+                break;
+            case 9:
+                digitalWrite(DIB, 1);
+                break;
+            case 10:
+                digitalWrite(CPC, 1);
+                break;
+            case 11:
+                digitalWrite(DIC, 1);
+                break;
+            case 12:
+                digitalWrite(VSO, 1);
+                break;
+            case 13:
+                digitalWrite(OUT1, 1);
+                break;
+            case 14:
+                digitalWrite(OUT2, 1);
+                lamp = -1;
+                break;
+        }
+        lamp++;
         count = 0;
     }
-    */
 
+    /*
     if (count == 9) {
         i2c_poll();
         count = 0;
     }
+    */
 
     /*
     switch (state) {
@@ -106,7 +153,7 @@ static void system_tick(void) {
 
 void setup() {
     setup_pins();
-    i2c_setup(OUT3, OUT4);
+    //i2c_setup(OUT3, OUT4);
     setup_encoder();
     modbusino_slave.setup(MODBUS_BAUD);
     system_tick_timer.attachInterrupt(system_tick);
@@ -121,7 +168,7 @@ void loop() {
     static int i = 0, val = 0;
 
     mb_regs[MB_QUAD] = encoder_timer.getCount();
-    mb_regs[MB_I2C] = i2c_get_data();
+    mb_regs[MB_I2C] = 0; //i2c_get_data();
 
     if (modbusino_slave.loop(mb_regs, MB_REGS_SIZE) > 0) {
         MB_ACTION(MB_STEP) {
