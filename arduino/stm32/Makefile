@@ -116,6 +116,7 @@ OBJS += $(ARDUINO_CORE)/libraries/SrcWrapper/src/HAL/stm32yyxx_hal_cortex.o
 OBJS += $(ARDUINO_CORE)/libraries/SrcWrapper/src/HAL/stm32yyxx_hal_dac.o
 OBJS += $(ARDUINO_CORE)/libraries/SrcWrapper/src/HAL/stm32yyxx_hal_tim.o
 OBJS += $(ARDUINO_CORE)/libraries/SrcWrapper/src/HAL/stm32yyxx_hal_tim_ex.o
+OBJS += $(ARDUINO_CORE)/libraries/SrcWrapper/src/HAL/stm32yyxx_hal_spi.o
 OBJS += $(ARDUINO_CORE)/libraries/SrcWrapper/src/LL/stm32yyxx_ll_rcc.o
 OBJS += $(ARDUINO_CORE)/libraries/SrcWrapper/src/LL/stm32yyxx_ll_gpio.o
 OBJS += $(ARDUINO_CORE)/libraries/SrcWrapper/src/LL/stm32yyxx_ll_usb.o

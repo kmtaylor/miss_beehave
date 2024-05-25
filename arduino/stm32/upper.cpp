@@ -40,9 +40,6 @@ static void setup_pins(void) {
     pinMode(OUT8, OUTPUT);
     pinMode(OUT10, OUTPUT);
 
-    /* Direct pins */
-    pinMode(ESTOP, OUTPUT);
-
     /* Level shifted pins */
     pinMode(CPX, OUTPUT);
     pinMode(DIX, OUTPUT);
@@ -57,12 +54,12 @@ static void setup_pins(void) {
     pinMode(CPC, OUTPUT);
     pinMode(DIC, OUTPUT);
     pinMode(VSO, OUTPUT);
-    pinMode(OUT1, OUTPUT);
     pinMode(OUT2, OUTPUT);
 }
 
 static void system_tick(void) {
     static int count = 0;
+    static int count2 = 0;
     static int lamp = 0;
 
     count++;
@@ -80,7 +77,6 @@ static void system_tick(void) {
         digitalWrite(CPC, 0);
         digitalWrite(DIC, 0);
         digitalWrite(VSO, 0);
-        digitalWrite(OUT1, 0);
         digitalWrite(OUT2, 0);
         switch(lamp) {
             case 0:
@@ -123,9 +119,6 @@ static void system_tick(void) {
                 digitalWrite(VSO, 1);
                 break;
             case 13:
-                digitalWrite(OUT1, 1);
-                break;
-            case 14:
                 digitalWrite(OUT2, 1);
                 lamp = -1;
                 break;
@@ -134,26 +127,16 @@ static void system_tick(void) {
         count = 0;
     }
 
-    /*
-    if (count == 9) {
+    count2++;
+    if (count2 == 1) {
         i2c_poll();
-        count = 0;
+        count2 = 0;
     }
-    */
-
-    /*
-    switch (state) {
-        case 0:
-            LL_I2C_GenerateStartCondition(I2C1);
-            LL_I2C_TransmitData8(I2C1, 0x6C);
-            LL_I2C_TransmitData8(I2C1, 0x0C);
-    }
-    */
 }
 
 void setup() {
     setup_pins();
-    //i2c_setup(OUT3, OUT4);
+    i2c_setup(ESTOP, OUT1);
     setup_encoder();
     modbusino_slave.setup(MODBUS_BAUD);
     system_tick_timer.attachInterrupt(system_tick);
