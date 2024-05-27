@@ -1,9 +1,9 @@
 #include <Arduino.h>
 
 static SPI_HandleTypeDef spi_handle[2];
-static DMA_HandleTypeDef dma_handle[2];
+static DMA_HandleTypeDef dma_handle[3];
 
-void i2c_setup(uint8_t scl, uint8_t sda) {
+void i2c_setup(uint8_t scl, uint8_t sda_out, uint8_t sda_in, uint8_t sclk) {
     RCC_ClkInitTypeDef rcc_config;
     uint32_t flash_latency;
 
@@ -21,7 +21,9 @@ void i2c_setup(uint8_t scl, uint8_t sda) {
     __HAL_RCC_SPI3_RELEASE_RESET();
     __HAL_RCC_DMA1_CLK_ENABLE();
     pinmap_pinout(digitalPinToPinName(scl), PinMap_SPI_MOSI);
-    pinmap_pinout(digitalPinToPinName(sda), PinMap_SPI_MOSI);
+    pinmap_pinout(digitalPinToPinName(sda_out), PinMap_SPI_MOSI);
+    pinmap_pinout(digitalPinToPinName(sda_in), PinMap_SPI_MISO);
+    pinmap_pinout(digitalPinToPinName(sclk), PinMap_SPI_SCLK);
 
     dma_handle[0].Instance = DMA1_Stream4;
     dma_handle[0].Init.Channel = DMA_CHANNEL_0;
@@ -43,6 +45,16 @@ void i2c_setup(uint8_t scl, uint8_t sda) {
     dma_handle[1].Init.Mode = DMA_NORMAL;
     dma_handle[1].Init.Priority = DMA_PRIORITY_LOW;
     dma_handle[1].Init.FIFOMode = DMA_FIFOMODE_DISABLE;
+    dma_handle[2].Instance = DMA1_Stream2;
+    dma_handle[2].Init.Channel = DMA_CHANNEL_0;
+    dma_handle[2].Init.Direction = DMA_PERIPH_TO_MEMORY;
+    dma_handle[2].Init.PeriphInc = DMA_PINC_DISABLE;
+    dma_handle[2].Init.MemInc = DMA_MINC_ENABLE;
+    dma_handle[2].Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
+    dma_handle[2].Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
+    dma_handle[2].Init.Mode = DMA_NORMAL;
+    dma_handle[2].Init.Priority = DMA_PRIORITY_LOW;
+    dma_handle[2].Init.FIFOMode = DMA_FIFOMODE_DISABLE;
 
     /* Set SPI clk to 29.3KHz (I2C clock is 14.6KHz) */
     spi_handle[0].Instance = SPI2;
@@ -64,13 +76,12 @@ void i2c_setup(uint8_t scl, uint8_t sda) {
 
     HAL_DMA_Init(&dma_handle[0]);
     HAL_DMA_Init(&dma_handle[1]);
+    HAL_DMA_Init(&dma_handle[2]);
     spi_handle[0].hdmatx = &dma_handle[0];
     spi_handle[1].hdmatx = &dma_handle[1];
+    spi_handle[1].hdmarx = &dma_handle[2];
     HAL_SPI_Init(&spi_handle[0]);
     HAL_SPI_Init(&spi_handle[1]);
-}
-
-uint16_t i2c_get_data(void) {
 }
 
 static uint8_t scl_data[] = {  0x55, 0x55, 0x55, 0x55, 0x54, 0xaa, 0xaa, 0xaa,
@@ -79,9 +90,15 @@ static uint8_t scl_data[] = {  0x55, 0x55, 0x55, 0x55, 0x54, 0xaa, 0xaa, 0xaa,
 static uint8_t sda_data[] = {  0xe1, 0x87, 0xff, 0xe6, 0x01, 0xc3, 0x0c, 0x00,
                                0x00, 0x30, 0x00, 0x0c, 0x00, 0x00, 0xc0 };
 
+static uint8_t rx_data[15];
+
+uint16_t i2c_get_data(uint8_t byte) {
+    return rx_data[byte];
+}
+
 void i2c_poll(void) {
     HAL_SPI_Abort(&spi_handle[0]);
     HAL_SPI_Abort(&spi_handle[1]);
     HAL_SPI_Transmit_DMA(&spi_handle[0], scl_data, 15);
-    HAL_SPI_Transmit_DMA(&spi_handle[1], sda_data, 15);
+    HAL_SPI_TransmitReceive_DMA(&spi_handle[1], sda_data, rx_data, 15);
 }

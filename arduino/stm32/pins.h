@@ -8,6 +8,7 @@
 
 #define ESTOP       PC12
 #define D1X         PC11
+#define D10X        PC10
 
 #define CPX         PE14
 #define DIX         PE15
