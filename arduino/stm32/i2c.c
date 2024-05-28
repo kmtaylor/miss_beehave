@@ -93,7 +93,27 @@ static uint8_t sda_data[] = {  0xe1, 0x87, 0xff, 0xe6, 0x01, 0xc3, 0x0c, 0x00,
 static uint8_t rx_data[15];
 
 uint16_t i2c_get_data(uint8_t byte) {
-    return rx_data[byte];
+    int i, j, p;
+    uint8_t tmp;
+    uint8_t regs[3] = {0, 0, 0};
+
+    j = (7 << 3) | 2;
+    tmp = (rx_data[j/8] ^ 0xff) << (1 + 2);
+
+    for(i = 0, p = 0; p < 3; ) {
+        if (i != 8) {
+            regs[p] = (regs[p] << 1) | (tmp >> 7);
+            i++;
+        } else {
+            /* Skip ack bit */
+            p++;
+            i = 0;
+        }
+        tmp <<= 2; j += 2;
+        if (!(j & 7)) tmp = (rx_data[j/8] ^ 0xff) << 1;
+    }
+
+    return regs[byte];
 }
 
 void i2c_poll(void) {

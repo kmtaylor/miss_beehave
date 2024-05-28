@@ -17,18 +17,6 @@ enum modbus_regs_e {
     MB_I2C_0,
     MB_I2C_1,
     MB_I2C_2,
-    MB_I2C_3,
-    MB_I2C_4,
-    MB_I2C_5,
-    MB_I2C_6,
-    MB_I2C_7,
-    MB_I2C_8,
-    MB_I2C_9,
-    MB_I2C_10,
-    MB_I2C_11,
-    MB_I2C_12,
-    MB_I2C_13,
-    MB_I2C_14,
     MB_REGS_SIZE,
 };
 
@@ -168,18 +156,6 @@ void loop() {
     mb_regs[MB_I2C_0] = i2c_get_data(0);
     mb_regs[MB_I2C_1] = i2c_get_data(1);
     mb_regs[MB_I2C_2] = i2c_get_data(2);
-    mb_regs[MB_I2C_3] = i2c_get_data(3);
-    mb_regs[MB_I2C_4] = i2c_get_data(4);
-    mb_regs[MB_I2C_5] = i2c_get_data(5);
-    mb_regs[MB_I2C_6] = i2c_get_data(6);
-    mb_regs[MB_I2C_7] = i2c_get_data(7);
-    mb_regs[MB_I2C_8] = i2c_get_data(8);
-    mb_regs[MB_I2C_9] = i2c_get_data(9);
-    mb_regs[MB_I2C_10] = i2c_get_data(10);
-    mb_regs[MB_I2C_11] = i2c_get_data(11);
-    mb_regs[MB_I2C_12] = i2c_get_data(12);
-    mb_regs[MB_I2C_13] = i2c_get_data(13);
-    mb_regs[MB_I2C_14] = i2c_get_data(14);
 
     if (modbusino_slave.loop(mb_regs, MB_REGS_SIZE) > 0) {
         MB_ACTION(MB_STEP) {
