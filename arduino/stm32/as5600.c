@@ -3,16 +3,16 @@
 static SPI_HandleTypeDef spi_handle[2];
 static DMA_HandleTypeDef dma_handle[3];
 
-void i2c_setup(uint8_t scl, uint8_t sda_out, uint8_t sda_in, uint8_t sclk) {
-    RCC_ClkInitTypeDef rcc_config;
-    uint32_t flash_latency;
+static uint8_t scl_data[] = {  0x55, 0x55, 0x55, 0x55, 0x54, 0xaa, 0xaa, 0xaa,
+                               0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0x80 };
 
-    /* Set PCLK1 to 7.5MHz */
-    HAL_RCC_GetClockConfig(&rcc_config, &flash_latency);
-    rcc_config.ClockType = RCC_CLOCKTYPE_PCLK1;
-    rcc_config.APB1CLKDivider = RCC_HCLK_DIV16;
-    HAL_RCC_ClockConfig(&rcc_config, flash_latency);
+static uint8_t sda_data[] = {  0xe1, 0x87, 0xff, 0xe6, 0x01, 0xc3, 0x0c, 0x00,
+                               0x00, 0x30, 0x00, 0x0c, 0x00, 0x00, 0xc0 };
 
+static uint8_t rx_data[15];
+static uint8_t rx_regs[3];
+
+void as5600_setup(uint8_t scl, uint8_t sda_out, uint8_t sda_in, uint8_t sclk) {
     __HAL_RCC_SPI2_CLK_ENABLE();
     __HAL_RCC_SPI3_CLK_ENABLE();
     __HAL_RCC_SPI2_FORCE_RESET();
@@ -56,13 +56,13 @@ void i2c_setup(uint8_t scl, uint8_t sda_out, uint8_t sda_in, uint8_t sclk) {
     dma_handle[2].Init.Priority = DMA_PRIORITY_LOW;
     dma_handle[2].Init.FIFOMode = DMA_FIFOMODE_DISABLE;
 
-    /* Set SPI clk to 29.3KHz (I2C clock is 14.6KHz) */
+    /* Set SPI clk to 117KHz (I2C clock is 58.6KHz) */
     spi_handle[0].Instance = SPI2;
     spi_handle[0].Init.Mode = SPI_MODE_MASTER;
     spi_handle[0].Init.Direction = SPI_DIRECTION_2LINES;
     spi_handle[0].Init.DataSize = SPI_DATASIZE_8BIT; 
     spi_handle[0].Init.NSS = SPI_NSS_SOFT; 
-    spi_handle[0].Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_256;
+    spi_handle[0].Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_128;
     spi_handle[0].Init.FirstBit = SPI_FIRSTBIT_MSB; 
     spi_handle[0].Init.TIMode = SPI_TIMODE_ENABLE;
     spi_handle[1].Instance = SPI3;
@@ -70,7 +70,7 @@ void i2c_setup(uint8_t scl, uint8_t sda_out, uint8_t sda_in, uint8_t sclk) {
     spi_handle[1].Init.Direction = SPI_DIRECTION_2LINES;
     spi_handle[1].Init.DataSize = SPI_DATASIZE_8BIT; 
     spi_handle[1].Init.NSS = SPI_NSS_SOFT; 
-    spi_handle[1].Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_256;
+    spi_handle[1].Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_128;
     spi_handle[1].Init.FirstBit = SPI_FIRSTBIT_MSB; 
     spi_handle[1].Init.TIMode = SPI_TIMODE_ENABLE;
 
@@ -82,27 +82,22 @@ void i2c_setup(uint8_t scl, uint8_t sda_out, uint8_t sda_in, uint8_t sclk) {
     spi_handle[1].hdmarx = &dma_handle[2];
     HAL_SPI_Init(&spi_handle[0]);
     HAL_SPI_Init(&spi_handle[1]);
+
+    HAL_SPI_Transmit_DMA(&spi_handle[0], scl_data, 15);
+    HAL_SPI_TransmitReceive_DMA(&spi_handle[1], sda_data, rx_data, 15);
 }
 
-static uint8_t scl_data[] = {  0x55, 0x55, 0x55, 0x55, 0x54, 0xaa, 0xaa, 0xaa,
-                               0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0x80 };
-
-static uint8_t sda_data[] = {  0xe1, 0x87, 0xff, 0xe6, 0x01, 0xc3, 0x0c, 0x00,
-                               0x00, 0x30, 0x00, 0x0c, 0x00, 0x00, 0xc0 };
-
-static uint8_t rx_data[15];
-
-uint16_t i2c_get_data(uint8_t byte) {
+static uint16_t as5600_decode(void) {
     int i, j, p;
     uint8_t tmp;
-    uint8_t regs[3] = {0, 0, 0};
 
+    memset(rx_regs, 0, 3);
     j = (7 << 3) | 2;
     tmp = (rx_data[j/8] ^ 0xff) << (1 + 2);
 
     for(i = 0, p = 0; p < 3; ) {
         if (i != 8) {
-            regs[p] = (regs[p] << 1) | (tmp >> 7);
+            rx_regs[p] = (rx_regs[p] << 1) | (tmp >> 7);
             i++;
         } else {
             /* Skip ack bit */
@@ -112,13 +107,33 @@ uint16_t i2c_get_data(uint8_t byte) {
         tmp <<= 2; j += 2;
         if (!(j & 7)) tmp = (rx_data[j/8] ^ 0xff) << 1;
     }
-
-    return regs[byte];
 }
 
-void i2c_poll(void) {
+uint8_t as5600_get_status(void) {
+    return rx_regs[0];
+}
+
+uint16_t as5600_get_pos(void) {
+    return (rx_regs[2] << 8) | rx_regs[1];
+}
+
+void as5600_poll(void) {
+    as5600_decode();
+
     HAL_SPI_Abort(&spi_handle[0]);
     HAL_SPI_Abort(&spi_handle[1]);
-    HAL_SPI_Transmit_DMA(&spi_handle[0], scl_data, 15);
-    HAL_SPI_TransmitReceive_DMA(&spi_handle[1], sda_data, rx_data, 15);
+
+    HAL_DMA_Start(&dma_handle[0], (uint32_t) scl_data, 
+            (uint32_t) &spi_handle[0].Instance->DR, 15);
+    HAL_DMA_Start(&dma_handle[1], (uint32_t) sda_data, 
+            (uint32_t) &spi_handle[1].Instance->DR, 15);
+    HAL_DMA_Start(&dma_handle[2], (uint32_t) &spi_handle[1].Instance->DR,
+            (uint32_t) rx_data, 15);
+
+    __HAL_SPI_ENABLE(&spi_handle[0]);
+    __HAL_SPI_ENABLE(&spi_handle[1]);
+
+    SET_BIT(spi_handle[1].Instance->CR2, SPI_CR2_RXDMAEN);
+    SET_BIT(spi_handle[0].Instance->CR2, SPI_CR2_TXDMAEN);
+    SET_BIT(spi_handle[1].Instance->CR2, SPI_CR2_TXDMAEN);
 }

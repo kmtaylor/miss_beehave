@@ -20,11 +20,11 @@ all: $(TARGET).dfu
 
 program:
 	-timeout 0.5 pd -nogui stm32_bootloader.pd
-	usbreset 0483:5740
+	-usbreset 0483:5740
 	sleep 0.5
 	dfu-util -D $(TARGET).dfu
 
-OBJS := i2c.o upper.o
+OBJS := as5600.o upper.o
 OBJS += ../lib/modbusino/Modbusino.o
 
 CFLAGS := -DARDUINO_ARCH_STM32
@@ -125,7 +125,6 @@ OBJS += $(ARDUINO_CORE)/libraries/SrcWrapper/src/LL/stm32yyxx_ll_rcc.o
 OBJS += $(ARDUINO_CORE)/libraries/SrcWrapper/src/LL/stm32yyxx_ll_gpio.o
 OBJS += $(ARDUINO_CORE)/libraries/SrcWrapper/src/LL/stm32yyxx_ll_usb.o
 OBJS += $(ARDUINO_CORE)/libraries/SrcWrapper/src/LL/stm32yyxx_ll_tim.o
-OBJS += $(ARDUINO_CORE)/libraries/SrcWrapper/src/LL/stm32yyxx_ll_i2c.o
 
 $(TARGET).bin: $(TARGET).elf
 	$(ARM-OBJCOPY) -O binary $< $@

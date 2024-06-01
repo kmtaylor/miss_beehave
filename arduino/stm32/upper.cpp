@@ -5,9 +5,8 @@
 
 #include "boot.h"
 #include "pins.h"
-#include "i2c.h"
+#include "as5600.h"
 
-#define MODBUS_BAUD     115200
 #define MODBUS_SLAVE    5
 #define MODBUS_IDLE     ((uint16_t) -1)
 
@@ -16,9 +15,8 @@ enum modbus_regs_e {
     MB_STEP,
     MB_DIR,
     MB_QUAD,
-    MB_I2C_0,
-    MB_I2C_1,
-    MB_I2C_2,
+    MB_AS5600_STATUS,
+    MB_AS5600_POS,
     MB_REGS_SIZE,
 };
 
@@ -28,8 +26,8 @@ static HardwareTimer system_tick_timer(TIM2);
 static HardwareTimer encoder_timer(TIM3);
 
 static void setup_encoder(void) {
-    pinmap_pinout(digitalPinToPinName(INP7), PinMap_TIM);
-    pinmap_pinout(digitalPinToPinName(INP8), PinMap_TIM);
+    pinmap_pinout(digitalPinToPinName(PIN_INP7), PinMap_TIM);
+    pinmap_pinout(digitalPinToPinName(PIN_INP8), PinMap_TIM);
 
     LL_TIM_ENCODER_InitTypeDef encoder_config;
     LL_TIM_ENCODER_StructInit(&encoder_config);
@@ -41,110 +39,34 @@ static void setup_encoder(void) {
 }
 
 static void setup_pins(void) {
-    pinMode(OUT8, OUTPUT);
-    pinMode(OUT10, OUTPUT);
-
     /* Level shifted pins */
-    pinMode(CPX, OUTPUT);
-    pinMode(DIX, OUTPUT);
-    pinMode(CPY, OUTPUT);
-    pinMode(DIY, OUTPUT);
-    pinMode(DIZ, OUTPUT);
-    pinMode(CPZ, OUTPUT);
-    pinMode(CPA, OUTPUT);
-    pinMode(DIA, OUTPUT);
-    pinMode(CPB, OUTPUT);
-    pinMode(DIB, OUTPUT);
-    pinMode(CPC, OUTPUT);
-    pinMode(DIC, OUTPUT);
-    pinMode(VSO, OUTPUT);
-    pinMode(OUT2, OUTPUT);
+    pinMode(PIN_CPX, OUTPUT);
+    pinMode(PIN_DIX, OUTPUT);
+    pinMode(PIN_CPY, OUTPUT);
+    pinMode(PIN_DIY, OUTPUT);
+    pinMode(PIN_DIZ, OUTPUT);
+    pinMode(PIN_CPZ, OUTPUT);
+    pinMode(PIN_CPA, OUTPUT);
+    pinMode(PIN_DIA, OUTPUT);
+    pinMode(PIN_CPB, OUTPUT);
+    pinMode(PIN_DIB, OUTPUT);
+    pinMode(PIN_CPC, OUTPUT);
+    pinMode(PIN_DIC, OUTPUT);
+    pinMode(PIN_VSO, OUTPUT);
+    pinMode(PIN_OUT2, OUTPUT);
 }
 
 static void system_tick(void) {
-    static int count = 0;
-    static int count2 = 0;
-    static int lamp = 0;
-
-    count++;
-    if (count == 99) {
-        digitalWrite(CPX, 0);
-        digitalWrite(DIX, 0);
-        digitalWrite(CPY, 0);
-        digitalWrite(DIY, 0);
-        digitalWrite(DIZ, 0);
-        digitalWrite(CPZ, 0);
-        digitalWrite(CPA, 0);
-        digitalWrite(DIA, 0);
-        digitalWrite(CPB, 0);
-        digitalWrite(DIB, 0);
-        digitalWrite(CPC, 0);
-        digitalWrite(DIC, 0);
-        digitalWrite(VSO, 0);
-        digitalWrite(OUT2, 0);
-        switch(lamp) {
-            case 0:
-                digitalWrite(CPX, 1);
-                break;
-            case 1:
-                digitalWrite(DIX, 1);
-                break;
-            case 2:
-                digitalWrite(CPY, 1);
-                break;
-            case 3:
-                digitalWrite(DIY, 1);
-                break;
-            case 4:
-                digitalWrite(CPZ, 1);
-                break;
-            case 5:
-                digitalWrite(DIZ, 1);
-                break;
-            case 6:
-                digitalWrite(CPA, 1);
-                break;
-            case 7:
-                digitalWrite(DIA, 1);
-                break;
-            case 8:
-                digitalWrite(CPB, 1);
-                break;
-            case 9:
-                digitalWrite(DIB, 1);
-                break;
-            case 10:
-                digitalWrite(CPC, 1);
-                break;
-            case 11:
-                digitalWrite(DIC, 1);
-                break;
-            case 12:
-                digitalWrite(VSO, 1);
-                break;
-            case 13:
-                digitalWrite(OUT2, 1);
-                lamp = -1;
-                break;
-        }
-        lamp++;
-        count = 0;
-    }
-
-    count2++;
-    if (count2 == 1) {
-        i2c_poll();
-        count2 = 0;
-    }
+    as5600_poll();
 }
 
 void setup() {
     setup_pins();
-    i2c_setup(ESTOP, OUT1, D1X, D10X);
     setup_encoder();
-    modbusino_slave.setup(MODBUS_BAUD);
+    as5600_setup(PIN_ESTOP, PIN_OUT1, PIN_1X, PIN_10X);
+    modbusino_slave.setup(0);
     system_tick_timer.attachInterrupt(system_tick);
-    system_tick_timer.setOverflow(180e3);
+    system_tick_timer.setOverflow(60e3); /* 1ms */
     system_tick_timer.resume();
 }
 
@@ -155,9 +77,8 @@ void loop() {
     static int i = 0, val = 0;
 
     mb_regs[MB_QUAD] = encoder_timer.getCount();
-    mb_regs[MB_I2C_0] = i2c_get_data(0);
-    mb_regs[MB_I2C_1] = i2c_get_data(1);
-    mb_regs[MB_I2C_2] = i2c_get_data(2);
+    mb_regs[MB_AS5600_STATUS] = as5600_get_status();
+    mb_regs[MB_AS5600_POS] = as5600_get_pos();
 
     if (modbusino_slave.loop(mb_regs, MB_REGS_SIZE) > 0) {
         MB_ACTION(MB_REBOOT) {
@@ -167,10 +88,10 @@ void loop() {
             }
         }
         MB_ACTION(MB_STEP) {
-            digitalWrite(OUT8, mb_val);
+            digitalWrite(PIN_CPX, mb_val);
         }
         MB_ACTION(MB_DIR) {
-            digitalWrite(OUT10, mb_val);
+            digitalWrite(PIN_DIX, mb_val);
         }
     }
 }
