@@ -56,7 +56,7 @@ void as5600_setup(uint8_t scl, uint8_t sda_out, uint8_t sda_in, uint8_t sclk) {
     dma_handle[2].Init.Priority = DMA_PRIORITY_LOW;
     dma_handle[2].Init.FIFOMode = DMA_FIFOMODE_DISABLE;
 
-    /* Set SPI clk to 117KHz (I2C clock is 58.6KHz) */
+    /* Set SPI clk to 234KHz (I2C clock is 117KHz) */
     spi_handle[0].Instance = SPI2;
     spi_handle[0].Init.Mode = SPI_MODE_MASTER;
     spi_handle[0].Init.Direction = SPI_DIRECTION_2LINES;
