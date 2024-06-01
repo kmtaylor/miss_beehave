@@ -3,6 +3,7 @@
 
 #include <stm32yyxx_ll_tim.h>
 
+#include "boot.h"
 #include "pins.h"
 #include "i2c.h"
 
@@ -11,6 +12,7 @@
 #define MODBUS_IDLE     ((uint16_t) -1)
 
 enum modbus_regs_e {
+    MB_REBOOT,
     MB_STEP,
     MB_DIR,
     MB_QUAD,
@@ -158,6 +160,12 @@ void loop() {
     mb_regs[MB_I2C_2] = i2c_get_data(2);
 
     if (modbusino_slave.loop(mb_regs, MB_REGS_SIZE) > 0) {
+        MB_ACTION(MB_REBOOT) {
+            if (mb_val == 9876) {
+                BOOTLOADER_FLAG = BOOTLOADER_FLAG_VALUE;
+                HAL_NVIC_SystemReset();
+            }
+        }
         MB_ACTION(MB_STEP) {
             digitalWrite(OUT8, mb_val);
         }

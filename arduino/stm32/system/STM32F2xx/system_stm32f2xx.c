@@ -45,6 +45,7 @@
   */
 
 #include "stm32f2xx.h"
+#include "../../boot.h"
 
 /**
   * @}
@@ -150,6 +151,19 @@
   */
 void SystemInit(void)
 {
+  typedef  void (*pFunction)(void);
+  uint32_t JumpAddress;
+  pFunction JumpToBootloader;
+
+  if (BOOTLOADER_FLAG == BOOTLOADER_FLAG_VALUE) {
+    BOOTLOADER_FLAG = 0;
+
+    /* Jump to system memory bootloader */
+    JumpAddress = *(__IO uint32_t*) (BOOTLOADER_ADDRESS + 4);
+    JumpToBootloader = (pFunction) JumpAddress;
+    JumpToBootloader();
+  }
+
   /* Reset the RCC clock configuration to the default reset state ------------*/
   /* Set HSION bit */
   RCC->CR |= (uint32_t)0x00000001;

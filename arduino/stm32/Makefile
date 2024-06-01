@@ -19,6 +19,9 @@ ARM-OBJCOPY := $(TOOLCHAIN)/arm-none-eabi-objcopy
 all: $(TARGET).dfu
 
 program:
+	-timeout 0.5 pd -nogui stm32_bootloader.pd
+	usbreset 0483:5740
+	sleep 0.5
 	dfu-util -D $(TARGET).dfu
 
 OBJS := i2c.o upper.o

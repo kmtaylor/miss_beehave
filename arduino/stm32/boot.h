@@ -1,0 +1,7 @@
+#define BOOTLOADER_FLAG_VALUE   0x12345678
+#define BOOTLOADER_FLAG_OFFSET  100
+#define BOOTLOADER_ADDRESS      0x1FFF0000
+
+extern int _estack;
+
+#define BOOTLOADER_FLAG (*((uint32_t*) (&_estack - BOOTLOADER_FLAG_OFFSET)))
