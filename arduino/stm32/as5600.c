@@ -114,7 +114,7 @@ uint8_t as5600_get_status(void) {
 }
 
 uint16_t as5600_get_pos(void) {
-    return (rx_regs[2] << 8) | rx_regs[1];
+    return (rx_regs[1] << 8) | rx_regs[2];
 }
 
 void as5600_poll(void) {

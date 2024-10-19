@@ -63,7 +63,7 @@ static void system_tick(void) {
 void setup() {
     setup_pins();
     setup_encoder();
-    as5600_setup(PIN_ESTOP, PIN_OUT1, PIN_1X, PIN_10X);
+    as5600_setup(PIN_OUT1, PIN_ESTOP, PIN_1X, PIN_10X);
     modbusino_slave.setup(0);
     system_tick_timer.attachInterrupt(system_tick);
     system_tick_timer.setOverflow(60e3); /* 1ms */
