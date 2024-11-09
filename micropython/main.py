@@ -1,23 +1,23 @@
-import machine, time, uos, as5600
+import pyb, uos
 from umodbus.serial import ModbusRTU
+from servo import HeadServo
 
-#Setup pins
-machine.Pin(machine.Pin.board.OUT1,  mode=machine.Pin.ALT, alt=5) # SCL 
-machine.Pin(machine.Pin.board.ESTOP, mode=machine.Pin.ALT, alt=6) # SDA out
-machine.Pin(machine.Pin.board.P1X,   mode=machine.Pin.ALT, alt=6) # SDA in
-machine.Pin(machine.Pin.board.P10X,  mode=machine.Pin.ALT, alt=6) # Required dummy sclk
+pwm_timer = pyb.Timer(9, freq=1000)
+pwm_channel = pwm_timer.channel(2, pyb.Timer.PWM, pin=pyb.Pin('DIC'))
+dir_pin = pyb.Pin('CPC')
+servo = HeadServo(1000, pwm_channel, dir_pin)
 
-led = machine.Pin('CPX')
+mb = ModbusRTU(5)
+mb.set_hreg(1, 0) # PWM
+mb.set_hreg(2, 0) # Direction
 
-def as5600_poll(t):
-    as5600.poll()
+def modbus_main():
+    uos.dupterm(None, 1)
+    while True:
+        result = mb.process()
+        servo.set_pwm(mb.get_hreg(1))
+        servo.set_dir(mb.get_hreg(2))
+        mb.set_hreg(4, servo.get_status())
+        mb.set_hreg(5, servo.get_pos())
 
-as5600_timer = machine.Timer(-1, freq = 1000, callback = as5600_poll)
-
-uos.dupterm(None, 1)
-client = ModbusRTU(5)
-
-while True:
-    result = client.process()
-    client.set_hreg(4, as5600.get_status())
-    client.set_hreg(5, as5600.get_pos())
+#modbus_main()

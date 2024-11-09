@@ -29,7 +29,8 @@ deploy: build
 	$(LFS_CMD) $(LFS_FLAGS) $(LFS_DEV) $(LFS_MOUNT)
 	@mkdir -p $(LFS_MOUNT)/umodbus
 	cp $(UMODBUS_OBJ) $(LFS_MOUNT)/umodbus
-	cp main.py $(LFS_MOUNT)
+	cp main.py servo.py $(LFS_MOUNT)
+	df -h | grep $(LFS_MOUNT)
 	umount $(LFS_MOUNT)
 
 clean:
