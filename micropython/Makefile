@@ -25,11 +25,16 @@ MPY_CROSS := ~/src/micropython/mpy-cross/build/mpy-cross
 
 build: $(UMODBUS_OBJ)
 
-deploy: build
+%_with_version.py: %.py
+	sed "s|__git_hash__|0x`git rev-parse --short HEAD`|" $< > $@
+
+deploy: main_with_version.py build
 	$(LFS_CMD) $(LFS_FLAGS) $(LFS_DEV) $(LFS_MOUNT)
 	@mkdir -p $(LFS_MOUNT)/umodbus
 	cp $(UMODBUS_OBJ) $(LFS_MOUNT)/umodbus
-	cp main.py servo.py $(LFS_MOUNT)
+	cp main_with_version.py $(LFS_MOUNT)/main.py
+	rm main_with_version.py
+	cp servo.py $(LFS_MOUNT)
 	df -h | grep $(LFS_MOUNT)
 	umount $(LFS_MOUNT)
 

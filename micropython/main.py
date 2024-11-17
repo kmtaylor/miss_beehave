@@ -16,7 +16,9 @@ def servo_pos(reg_type, address, val):
     head_servo.set_pos = val[0]
     head_servo.enable = True
 
-mb = ModbusRTU(5)
+mb = ModbusRTU(5, id_bytes = b'MissBeehave NVUM\x00')
+mb.set_hreg(0xF000, __git_hash__ >> 16)
+mb.set_hreg(0xF001, __git_hash__ & 0xFFFF)
 mb.add_hreg(1, on_set_cb=servo_pos) # Position
 
 def modbus_main():
